@@ -4,6 +4,8 @@ from datetime import datetime
 from tkinter import ttk
 from functools import partial
 
+# import sv_ttk
+
 import ext
 
 # TODO:
@@ -103,11 +105,12 @@ def next(cwdLabel, items, folderIcon, fileIcon, footer):
 
 # open file
 def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
+    iid = items.identify_row(event.y)
+    if iid == "":  # if double click on blank, don't do anything
+        return
     for item in items.selection():
         tempDictionary = items.item(item)
         tempName = tempDictionary["values"][0]  # get first value of dictionary
-    split = os.path.splitext(tempName)  # split file extension
-    ext = split[1]
     try:
         newPath = os.getcwd() + "\\" + tempName
         if os.path.isdir(
@@ -121,7 +124,15 @@ def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
         os.chdir("../")
 
 
-def onRightClick(m, event):
+def onRightClick(m, items, event):
+    iid = items.identify_row(event.y)
+    if iid:
+        items.selection_set(iid)
+        global selectedItem
+        selectedItem = items.item(iid)["values"][0]
+        print(selectedItem)
+    else:
+        pass
     try:
         m.tk_popup(event.x_root, event.y_root)
     finally:
@@ -161,8 +172,8 @@ def draw(file_path, window, s):
     footer = ttk.Label(footerFrame)
     # --Footer Frame
 
-    folderIcon = tk.PhotoImage(file=file_path + "Folder-icon.png", width=20, height=15)
-    fileIcon = tk.PhotoImage(file=file_path + "File-icon.png", width=20, height=15)
+    folderIcon = tk.PhotoImage(file=file_path + "Folder-icon.png", width=20, height=16)
+    fileIcon = tk.PhotoImage(file=file_path + "File-icon.png", width=20, height=16)
 
     # Header Frame
     refreshIcon = tk.PhotoImage(file=file_path + "Very-Basic-Reload-icon.png")
@@ -228,7 +239,7 @@ def draw(file_path, window, s):
         partial(onDoubleClick, cwdLabel, items, folderIcon, fileIcon, footer),
     )  # command on double click
     items.bind("<ButtonRelease-1>", partial(selectItem, items))
-    items.bind("<Button-3>", partial(onRightClick, m))  # command on right click
+    items.bind("<Button-3>", partial(onRightClick, m, items))  # command on right click
     # --Browse Frame
 
     # Menu bar
@@ -280,7 +291,7 @@ def draw(file_path, window, s):
 
 def rename_popup(window, file_path, items):
     top = tk.Toplevel(window)
-    top.geometry("200x50")
+    top.geometry("300x50")
     top.resizable(False, False)
     top.iconphoto(False, tk.PhotoImage(file=file_path + "icon.png"))
     if items.focus() != "":
@@ -307,8 +318,14 @@ def rename_f(nameEntry, top, event):
 
 def selectItem(items, event):
     global selectedItem
-    selectedItemID = items.focus()
-    selectedItem = items.item(selectedItemID)["values"][0]
+    # selectedItemID = items.focus()
+    iid = items.identify_row(event.y)
+    if iid:
+        items.selection_set(iid)
+        selectedItem = items.item(iid)["values"][0]
+        print(selectedItem)
+    else:
+        pass
 
 
 def about_popup(window, file_path):  # popup window
@@ -320,7 +337,7 @@ def about_popup(window, file_path):  # popup window
 
     lb = ttk.Label(top, text="My file explorer")
     lb2 = ttk.Label(top, text="Made by: Chris Tsouchlakis")
-    lb3 = ttk.Label(top, text="Version 0.1.0")
+    lb3 = ttk.Label(top, text="Version 0.1.1")
 
     lb.pack(pady=10)
     lb2.pack(pady=1)
@@ -356,7 +373,7 @@ def del_file_popup(items, window, file_path):
 
     if items.focus() != "":  # if there is a focused item
         top.title("Warning")
-        top.geometry("250x100")
+        top.geometry("300x120")
 
         lb = ttk.Label(
             top, text="Are you sure?\nThis file/directory will be deleted permanently."
@@ -369,10 +386,10 @@ def del_file_popup(items, window, file_path):
         cnbtn = ttk.Button(top, text="CANCEL", command=top.destroy)
 
         lb.pack()
-        delbtn.pack(padx=5)
-        cnbtn.pack()
+        delbtn.pack()
+        cnbtn.pack(pady=5)
     else:
-        top.geometry("200x50")
+        top.geometry("250x50")
         top.title("Info")
         lb = ttk.Label(top, text="There is no selected file or directory.")
         lb.pack()
@@ -391,6 +408,7 @@ def main():
     # Main window
     root = createWindow(file_path)
     s = ttk.Style()
+    # sv_ttk.set_theme("light")
 
     cwdLabel, items, folderIcon, fileIcon, footer = draw(file_path, root, s)
     refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
