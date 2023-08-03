@@ -356,7 +356,7 @@ def del_file_popup(items, window, file_path):
 
     if items.focus() != "":  # if there is a focused item
         top.title("Warning")
-        top.geometry("200x100")
+        top.geometry("250x100")
 
         lb = ttk.Label(
             top, text="Are you sure?\nThis file/directory will be deleted permanently."
