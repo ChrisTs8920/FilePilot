@@ -9,21 +9,41 @@ from functools import partial
 import ext
 
 # TODO:
-# Menu bar preferences,
+# Add scaling,
 # grab file icons from files,
-# improve extension handling (remove ext.py),
-# improve right click functionality,
+# improve extension handling,
+# break into modules,
 # editable path,
 # column sorting,
-# control treeview with arrow keys, open file with enter as well,
-# code improvements
+# code improvements, refactoring
 
 # globals
+fileNames = []
+file_path = ""  # path of main.py
 lastDirectory = ""
-selectedItem = ""
+selectedItem = ""  # focused item on Treeview
+fileSizesSum = 0  # total file size of current directory
+available_drives = [
+    chr(x) + ":" for x in range(65, 91) if os.path.exists(chr(x) + ":")
+]  # 65-91 -> search for drives A-Z
+currDrive = available_drives[0]  # current selected drive
+
+# current color
+color = ""
+# available colors
+lblue = "#A5C9FF"
+purple = "#A32CC4"
+lgreen = "#A5FFC9"
+coral = "#FFB2B2"
+grey = "#ABABAB"
+lgold = "#C2B97F"
+default = "#FFFFFF"
+
+# scales
+s100 = 27  # 100% scale
 
 
-def createWindow(file_path):
+def createWindow():
     root = tk.Tk()
     root.title("My File Explorer")
     root.geometry("1024x600")
@@ -33,58 +53,76 @@ def createWindow(file_path):
 
 
 def refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
+    global fileNames
     # Refresh Header
-    cwdLabel.config(text=os.getcwd())
+    cwdLabel.config(text=" " + os.getcwd())
     # --Refresh Header
 
     # Refresh Browse
+    fileSizesSum = 0
     if queryNames:  # if user gave query and pressed enter
         fileNames = queryNames
     else:
-        fileNames = os.listdir()
+        fileNames = os.listdir(currDrive)
     fileTypes = [None] * len(fileNames)
     fileSizes = [None] * len(fileNames)
     fileDateModified = []
     for i in items.get_children():  # delete data from previous directory
         items.delete(i)
     for i in range(len(fileNames)):
-        # modification time of file
-        fileDateModified.append(
-            datetime.fromtimestamp(os.path.getmtime(fileNames[i])).strftime(
-                "%d-%m-%Y %I:%M"
+        try:
+            # modification time of file
+            fileDateModified.append(
+                datetime.fromtimestamp(os.path.getmtime(fileNames[i])).strftime(
+                    "%d-%m-%Y %I:%M"
+                )
             )
-        )
-        # size of file
-        fileSizes[i] = (
-            str(round(os.stat(fileNames[i]).st_size / 1024)) + " KB"
-        )  # str->round->size of file in KB
-        # check file type
-        ext.extensions(fileTypes, fileNames, i)
+            # size of file
+            fileSizes[i] = str(
+                round(os.stat(fileNames[i]).st_size / 1024)
+            )  # str->round->size of file in KB
+            fileSizesSum += int(fileSizes[i])
+            fileSizes[i] = str(round(os.stat(fileNames[i]).st_size / 1024)) + " KB"
+            # check file type
+            ext.extensions(fileTypes, fileNames, i)
 
-        # insert
-        if fileTypes[i] == "Directory":
-            items.insert(
-                parent="",
-                index=i,
-                values=(fileNames[i], fileDateModified[i], fileTypes[i], ""),
-                image=folderIcon,
-            )
-        else:
-            items.insert(
-                parent="",
-                index=i,
-                values=(fileNames[i], fileDateModified[i], fileTypes[i], fileSizes[i]),
-                image=fileIcon,
-            )
-    # --Refresh Browse
+            # insert
+            if fileTypes[i] == "Directory":
+                items.insert(
+                    parent="",
+                    index=i,
+                    values=(fileNames[i], fileDateModified[i], fileTypes[i], ""),
+                    image=folderIcon,
+                )
+            else:
+                items.insert(
+                    parent="",
+                    index=i,
+                    values=(
+                        fileNames[i],
+                        fileDateModified[i],
+                        fileTypes[i],
+                        fileSizes[i],
+                    ),
+                    image=fileIcon,
+                )
+        except:
+            pass
+        # --Refresh Browse
 
     # Draw browse
     items.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     # --Draw browse
 
     # Refresh Footer
-    footer.config(text=str(len(fileNames)) + " files - directories")
-    footer.pack()
+    footer.config(
+        text=" "
+        + str(len(fileNames))
+        + " items | "
+        + str(round(fileSizesSum / 1024, 1))
+        + " MB Total"
+    )
+    footer.pack(fill=tk.BOTH)
     # --Refresh Footer
 
 
@@ -121,7 +159,7 @@ def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
             os.startfile(newPath)
         refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
     except:
-        os.chdir("../")
+        pass
 
 
 def onRightClick(m, items, event):
@@ -151,25 +189,24 @@ def search(searchEntry, cwdLabel, items, folderIcon, fileIcon, footer, event):
     refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames)
 
 
-def draw(file_path, window, s):
-    sep = ttk.Separator(window, orient="horizontal")
-    sep.pack(fill="x")
-
+def create_widgets(window):
+    s = ttk.Style()
     # Browse Frame
     browseFrame = ttk.Frame(window)
-    scroll = ttk.Scrollbar(browseFrame)
+    scroll = ttk.Scrollbar(browseFrame, orient="vertical")
     items = ttk.Treeview(
         browseFrame,
         columns=("Name", "Date modified", "Type", "Size"),
         yscrollcommand=scroll.set,
         height=15,
+        style="Custom.Treeview",
     )
     scroll.config(command=items.yview)  # scroll with mouse drag
     # --Browse Frame
 
     # Footer Frame
     footerFrame = ttk.Frame(window)
-    footer = ttk.Label(footerFrame)
+    footer = ttk.Label(footerFrame, background=color, foreground="black")
     # --Footer Frame
 
     folderIcon = tk.PhotoImage(file=file_path + "Folder-icon.png", width=20, height=16)
@@ -180,8 +217,19 @@ def draw(file_path, window, s):
     backArrowIcon = tk.PhotoImage(file=file_path + "Arrows-Back-icon.png")
     frontArrowIcon = tk.PhotoImage(file=file_path + "Arrows-Front-icon.png")
     headerFrame = ttk.Frame()
-    cwdLabel = ttk.Label(headerFrame, text=os.getcwd(), relief="groove", width=120)
-    searchEntry = ttk.Entry(headerFrame, width=27)
+    cwdLabel = ttk.Label(
+        headerFrame,
+        text=" " + os.getcwd(),
+        relief="flat",
+        width=120,
+        background="white",
+    )
+    searchEntry = ttk.Entry(
+        headerFrame, width=27, foreground="#777", style="Custom.TEntry"
+    )
+    searchEntry.insert(0, "Search files..")
+    searchEntry.bind("<Button-1>", partial(click, searchEntry))
+    searchEntry.bind("<FocusOut>", partial(FocusOut, searchEntry, window))
     backButton = ttk.Button(
         headerFrame,
         image=backArrowIcon,
@@ -204,18 +252,18 @@ def draw(file_path, window, s):
     # --Header Frame
 
     # Right click menu
-    m = tk.Menu(window, tearoff=False)
+    m = tk.Menu(window, tearoff=False, background="white")
     # m.add_command(label="Cut")
     # m.add_command(label="Copy")
     # m.add_command(label="Paste")
-    m.add_command(label="New file", command=partial(new_file_popup, window, file_path))
+    m.add_command(label="New file", command=partial(new_file_popup, window))
     m.add_command(
         label="Rename selected",
-        command=partial(rename_popup, window, file_path, items),
+        command=partial(rename_popup, window, items),
     )
     m.add_command(
         label="Delete selected",
-        command=partial(del_file_popup, items, window, file_path),
+        command=partial(del_file_popup, items, window),
     )
     m.add_separator()
     m.add_command(
@@ -224,7 +272,25 @@ def draw(file_path, window, s):
     )
     # --Right click menu
 
-    s.configure("Treeview", rowheight=30)  # increase row height of Treeview
+    s.configure("Treeview", rowheight=27)  # customize treeview
+
+    if color == default:
+        s.map(
+            "Custom.Treeview",
+            background=[("selected", "#DDD")],
+            foreground=[("selected", "black")],
+        )
+    else:
+        s.map(
+            "Custom.Treeview",
+            background=[("selected", color)],
+            foreground=[("selected", "black")],
+        )
+    s.configure("TFrame", background="white")  # customize Frame
+    s.configure("TButton", background=color)
+    s.configure("TFrame", background=color)
+    s.layout("Treeview", [("Treeview.treearea", {"sticky": "nswe"})])  # remove borders
+
     items.column("#0", width=40, stretch=tk.NO)
     items.column("Name", anchor=tk.W, width=150, minwidth=120)
     items.column("Date modified", anchor=tk.CENTER, width=200, minwidth=120)
@@ -240,16 +306,23 @@ def draw(file_path, window, s):
     )  # command on double click
     items.bind("<ButtonRelease-1>", partial(selectItem, items))
     items.bind("<Button-3>", partial(onRightClick, m, items))  # command on right click
+    items.bind("<Up>", partial(up_key, items))  # bind up arrow key
+    items.bind("<Down>", partial(down_key, items))  # bind down arrow key
     # --Browse Frame
 
     # Menu bar
     bar = tk.Menu(window)
     window.config(menu=bar)
 
-    file_menu = tk.Menu(bar, tearoff=False)
-    file_menu.add_command(
-        label="New file", command=partial(new_file_popup, window, file_path)
+    file_menu = tk.Menu(
+        bar,
+        tearoff=False,
+        background="white",
+        activebackground=color,
+        activeforeground="black",
+        activeborderwidth=2,
     )
+    file_menu.add_command(label="New file", command=partial(new_file_popup, window))
     file_menu.add_command(
         label="Rename selected", command=partial(rename_popup, window, file_path, items)
     )
@@ -261,12 +334,66 @@ def draw(file_path, window, s):
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=window.destroy)
 
-    about_menu = tk.Menu(bar, tearoff=False)
-    about_menu.add_command(
-        label="About the app", command=partial(about_popup, window, file_path)
+    drives_menu = tk.Menu(
+        bar,
+        tearoff=False,
+        background="white",
+        activebackground=color,
+        activeforeground="black",
+        activeborderwidth=2,
+    )
+    for drive in available_drives:
+        drives_menu.add_command(
+            label=drive,
+            command=partial(
+                cd_drive, drive, cwdLabel, items, folderIcon, fileIcon, footer, []
+            ),
+        )
+
+    preferences_menu = tk.Menu(
+        bar,
+        tearoff=False,
+        background="white",
+        activebackground=color,
+        activeforeground="black",
+        activeborderwidth=2,
     )
 
+    sub_themes = tk.Menu(
+        bar,
+        tearoff=False,
+        background="white",
+        activebackground=color,
+        activeforeground="black",
+        activeborderwidth=2,
+    )
+    sub_themes.add_command(
+        label="Light blue", command=partial(write_color, lblue, window)
+    )
+    sub_themes.add_command(label="Purple", command=partial(write_color, purple, window))
+    sub_themes.add_command(
+        label="Light Green", command=partial(write_color, lgreen, window)
+    )
+    sub_themes.add_command(label="Coral", command=partial(write_color, coral, window))
+    sub_themes.add_command(
+        label="Light Gold", command=partial(write_color, lgold, window)
+    )
+    sub_themes.add_command(label="White", command=partial(write_color, default, window))
+    preferences_menu.add_cascade(label="Color", menu=sub_themes)
+
+    about_menu = tk.Menu(
+        bar,
+        tearoff=False,
+        background="white",
+        activebackground=color,
+        activeforeground="black",
+        activeborderwidth=2,
+    )
+    about_menu.add_command(label="About the app", command=partial(about_popup, window))
+
     bar.add_cascade(label="File", menu=file_menu, underline=0)
+    bar.add_cascade(label="Select drive", menu=drives_menu, underline=0)
+    bar.add_cascade(label="Preferences", menu=preferences_menu, underline=0)
     bar.add_cascade(label="About", menu=about_menu, underline=0)
     # --Menu bar
 
@@ -289,7 +416,68 @@ def draw(file_path, window, s):
     return cwdLabel, items, folderIcon, fileIcon, footer
 
 
-def rename_popup(window, file_path, items):
+def write_color(color, window):
+    with open(file_path + "../res/color.txt", "w") as f:  # closes file automatically
+        f.write(color)
+    warning_popup(window)
+
+
+def warning_popup(window):
+    top = tk.Toplevel(window)
+    top.resizable(False, False)
+    top.iconphoto(False, tk.PhotoImage(file=file_path + "icon.png"))
+    top.title("Info")
+    top.geometry("320x60")
+
+    lb = ttk.Label(top, text="Please restart the application to apply changes.")
+    lb.pack()
+
+
+def cd_drive(drive, cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
+    global fileNames, currDrive
+    cwdLabel.config(text=" " + drive)
+    currDrive = drive
+    fileNames = os.listdir(currDrive)
+    os.chdir(currDrive + "\\")
+    refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames)
+
+
+def up_key(items, event):
+    global selectedItem
+    iid = items.focus()
+    iid = items.prev(iid)
+    if iid:
+        items.selection_set(iid)
+        selectedItem = items.item(iid)["values"][0]
+        print(selectedItem)
+    else:
+        pass
+
+
+def down_key(items, event):
+    global selectedItem
+    iid = items.focus()
+    iid = items.next(iid)
+    if iid:
+        items.selection_set(iid)
+        selectedItem = items.item(iid)["values"][0]
+        print(selectedItem)
+    else:
+        pass
+
+
+def click(searchEntry, event):
+    if searchEntry.get() == "Search files..":
+        searchEntry.delete(0, "end")
+
+
+def FocusOut(searchEntry, window, event):
+    searchEntry.delete(0, "end")
+    searchEntry.insert(0, "Search files..")
+    window.focus()
+
+
+def rename_popup(window, items):
     top = tk.Toplevel(window)
     top.geometry("300x50")
     top.resizable(False, False)
@@ -328,7 +516,7 @@ def selectItem(items, event):
         pass
 
 
-def about_popup(window, file_path):  # popup window
+def about_popup(window):  # popup window
     top = tk.Toplevel(window)
     top.geometry("300x100")
     top.title("About")
@@ -337,14 +525,14 @@ def about_popup(window, file_path):  # popup window
 
     lb = ttk.Label(top, text="My file explorer")
     lb2 = ttk.Label(top, text="Made by: Chris Tsouchlakis")
-    lb3 = ttk.Label(top, text="Version 0.1.1")
+    lb3 = ttk.Label(top, text="Version 0.2.0")
 
     lb.pack(pady=10)
     lb2.pack(pady=1)
     lb3.pack(pady=1)
 
 
-def new_file_popup(window, file_path):
+def new_file_popup(window):
     top = tk.Toplevel(window)
     top.geometry("200x50")
     top.title("New file")
@@ -362,11 +550,12 @@ def new_file_popup(window, file_path):
 
 def new_file(nameEntry, top, event):
     if nameEntry.get() != "":
-        open(os.getcwd() + "\\" + nameEntry.get(), "x")
+        f = open(os.getcwd() + "\\" + nameEntry.get(), "x")
+        f.close()
         top.destroy()
 
 
-def del_file_popup(items, window, file_path):
+def del_file_popup(items, window):
     top = tk.Toplevel(window)
     top.resizable(False, False)
     top.iconphoto(False, tk.PhotoImage(file=file_path + "icon.png"))
@@ -404,13 +593,17 @@ def del_file(top):
 
 
 def main():
+    global color, file_path
     file_path = os.path.join(os.path.dirname(__file__), "..\\icons\\")
     # Main window
-    root = createWindow(file_path)
-    s = ttk.Style()
+    root = createWindow()
+    with open(file_path + "../res/color.txt") as f:  # closes file automatically
+        color = f.readline()
+    if color == "":  # if color.txt is empty, set default color
+        color = default
     # sv_ttk.set_theme("light")
 
-    cwdLabel, items, folderIcon, fileIcon, footer = draw(file_path, root, s)
+    cwdLabel, items, folderIcon, fileIcon, footer = create_widgets(root)
     refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
     root.mainloop()
 
