@@ -324,11 +324,11 @@ def create_widgets(window):
     )
     file_menu.add_command(label="New file", command=partial(new_file_popup, window))
     file_menu.add_command(
-        label="Rename selected", command=partial(rename_popup, window, file_path, items)
+        label="Rename selected", command=partial(rename_popup, window, items)
     )
     file_menu.add_command(
         label="Delete selected",
-        command=partial(del_file_popup, items, window, file_path),
+        command=partial(del_file_popup, items, window),
     )
     # file_menu.add_command(label="Create directory", command=new_dir)
     file_menu.add_separator()
