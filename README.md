@@ -22,6 +22,7 @@ Execute ```py main.py```
 
 ## To do
 
+- Will attempt Linux compatability
 - Add Scaling
 - Use [Sun Valley Theme](https://github.com/rdbende/Sun-Valley-ttk-theme) (performance heavy)
 - Improve extension handling
