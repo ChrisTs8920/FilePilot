@@ -11,22 +11,24 @@ A simple file explorer made in Python and Tkinter.
 - Open files and directories
 - Create and Delete files and directories
 - Rename files and directories
-- Search files and directories using the textbox
-- Refresh current directory for any changes
-- Directory navigation using arrow buttons
+- Search files and directories in current directory
+- Change theme
 
 ## How to run
 
 Execute ```py main.py```
 
+*Tested on Windows 11.*
+
 ## To do
 
-- Add menu bar preferences
-- Improve right click functionality
+- Add Scaling
+- Use [Sun Valley Theme](https://github.com/rdbende/Sun-Valley-ttk-theme) (performance heavy)
+- Improve extension handling
 - Add editable path
 - Add column sorting
-- Add controls with arrow keys and enter
-- Code improvements
+- Break into modules
+- Code improvements and refactoring
 
 ## Screenshots
 
