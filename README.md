@@ -8,7 +8,7 @@ A simple file explorer made in Python and Tkinter.
 ### Features
 
 - View, Open files and directories
-- Create, Delete and Renme files and directories
+- Create, Delete and Rename files and directories
 - Search for files in current directory
 - Themes using [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
