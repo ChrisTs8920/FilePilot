@@ -12,11 +12,12 @@ A simple file explorer made in Python and Tkinter.
 - Create and Delete files and directories
 - Rename files and directories
 - Search files and directories in current directory
-- Change theme
+- Themes using [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
 ## How to run
 
-Execute ```py main.py```
+1. Install ttkbootstrap ```pip install ttkbootstrap```
+2. Execute ```py main.py```
 
 *Tested on Windows 11.*
 
@@ -24,7 +25,6 @@ Execute ```py main.py```
 
 - Will attempt Linux compatability
 - Add Scaling
-- Use [Sun Valley Theme](https://github.com/rdbende/Sun-Valley-ttk-theme) (performance heavy)
 - Improve extension handling
 - Add editable path
 - Add column sorting
