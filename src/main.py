@@ -1,16 +1,20 @@
 import os
 import tkinter as tk
 from datetime import datetime
-from tkinter import ttk
-from functools import partial
 
-# import sv_ttk
+# from tkinter import ttk
+from functools import partial
+from sys import platform
+import shutil
+
+import ttkbootstrap as ttk
 
 import ext
 
 # TODO:
+# Linux compatibility,
 # Add scaling,
-# grab file icons from files,
+# grab file icons from files (Or pillow library),
 # improve extension handling,
 # break into modules,
 # editable path,
@@ -23,28 +27,38 @@ file_path = ""  # path of main.py
 lastDirectory = ""
 selectedItem = ""  # focused item on Treeview
 fileSizesSum = 0  # total file size of current directory
-available_drives = [
-    chr(x) + ":" for x in range(65, 91) if os.path.exists(chr(x) + ":")
-]  # 65-91 -> search for drives A-Z
-currDrive = available_drives[0]  # current selected drive
 
-# current color
-color = ""
-# available colors
-lblue = "#A5C9FF"
-purple = "#A32CC4"
-lgreen = "#A5FFC9"
-coral = "#FFB2B2"
-grey = "#ABABAB"
-lgold = "#C2B97F"
-default = "#FFFFFF"
+if platform == "win32":
+    available_drives = [
+        chr(x) + ":" for x in range(65, 91) if os.path.exists(chr(x) + ":")
+    ]  # 65-91 -> search for drives A-Z
+    currDrive = available_drives[0]  # current selected drive
+elif platform == "linux":
+    available_drives = "/"
+    currDrive = available_drives
+
+# current theme
+theme = ""
+# available themes
+# Dark
+solarD = "solar"
+superheroD = "superhero"
+Darkly = "darkly"
+CyborgD = "cyborg"
+VaporD = "vapor"
+# Light
+literaL = "litera"
+mintyL = "minty"
+morphL = "morph"
+yetiL = "yeti"
 
 # scales
-s100 = 27  # 100% scale
+s100 = 28  # 100% scale
 
 
 def createWindow():
-    root = tk.Tk()
+    # root = tk.Tk()
+    root = ttk.Window(themename=theme)
     root.title("My File Explorer")
     root.geometry("1024x600")
     root.resizable(True, True)
@@ -63,7 +77,7 @@ def refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
     if queryNames:  # if user gave query and pressed enter
         fileNames = queryNames
     else:
-        fileNames = os.listdir(currDrive)
+        fileNames = os.listdir(os.getcwd())
     fileTypes = [None] * len(fileNames)
     fileSizes = [None] * len(fileNames)
     fileDateModified = []
@@ -143,6 +157,7 @@ def next(cwdLabel, items, folderIcon, fileIcon, footer):
 
 # open file
 def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
+    print(event)
     iid = items.identify_row(event.y)
     if iid == "":  # if double click on blank, don't do anything
         return
@@ -150,7 +165,7 @@ def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
         tempDictionary = items.item(item)
         tempName = tempDictionary["values"][0]  # get first value of dictionary
     try:
-        newPath = os.getcwd() + "\\" + tempName
+        newPath = os.getcwd() + "/" + tempName
         if os.path.isdir(
             newPath
         ):  # if file is directory, open directory else open file
@@ -159,6 +174,8 @@ def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
             os.startfile(newPath)
         refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
     except:
+        newPath = newPath.replace(tempName, "")
+        os.chdir("../")
         pass
 
 
@@ -206,7 +223,7 @@ def create_widgets(window):
 
     # Footer Frame
     footerFrame = ttk.Frame(window)
-    footer = ttk.Label(footerFrame, background=color, foreground="black")
+    footer = ttk.Label(footerFrame)
     # --Footer Frame
 
     folderIcon = tk.PhotoImage(file=file_path + "Folder-icon.png", width=20, height=16)
@@ -221,12 +238,9 @@ def create_widgets(window):
         headerFrame,
         text=" " + os.getcwd(),
         relief="flat",
-        width=120,
-        background="white",
+        width=110,
     )
-    searchEntry = ttk.Entry(
-        headerFrame, width=27, foreground="#777", style="Custom.TEntry"
-    )
+    searchEntry = ttk.Entry(headerFrame, width=30)
     searchEntry.insert(0, "Search files..")
     searchEntry.bind("<Button-1>", partial(click, searchEntry))
     searchEntry.bind("<FocusOut>", partial(FocusOut, searchEntry, window))
@@ -245,17 +259,24 @@ def create_widgets(window):
         command=partial(refresh, cwdLabel, items, folderIcon, fileIcon, footer, []),
         image=refreshIcon,
     )
-    # keep references
+    # keep references for buttons
     backButton.img_reference = backArrowIcon
     forwardButton.img_reference = frontArrowIcon
     refreshButton.img_reference = refreshIcon
     # --Header Frame
 
     # Right click menu
-    m = tk.Menu(window, tearoff=False, background="white")
+    m = ttk.Menu(window, tearoff=False)
     # m.add_command(label="Cut")
     # m.add_command(label="Copy")
     # m.add_command(label="Paste")
+    """m.add_command(
+        label="Open",
+        command=partial(
+            onDoubleClick, cwdLabel, items, folderIcon, fileIcon, footer
+        ),
+    )"""
+    # m.add_separator()
     m.add_command(label="New file", command=partial(new_file_popup, window))
     m.add_command(
         label="Rename selected",
@@ -272,23 +293,7 @@ def create_widgets(window):
     )
     # --Right click menu
 
-    s.configure("Treeview", rowheight=27)  # customize treeview
-
-    if color == default:
-        s.map(
-            "Custom.Treeview",
-            background=[("selected", "#DDD")],
-            foreground=[("selected", "black")],
-        )
-    else:
-        s.map(
-            "Custom.Treeview",
-            background=[("selected", color)],
-            foreground=[("selected", "black")],
-        )
-    s.configure("TFrame", background="white")  # customize Frame
-    s.configure("TButton", background=color)
-    s.configure("TFrame", background=color)
+    s.configure("Treeview", rowheight=28)  # customize treeview
     s.layout("Treeview", [("Treeview.treearea", {"sticky": "nswe"})])  # remove borders
 
     items.column("#0", width=40, stretch=tk.NO)
@@ -311,16 +316,12 @@ def create_widgets(window):
     # --Browse Frame
 
     # Menu bar
-    bar = tk.Menu(window)
+    bar = ttk.Menu(window)
     window.config(menu=bar)
 
-    file_menu = tk.Menu(
+    file_menu = ttk.Menu(
         bar,
         tearoff=False,
-        background="white",
-        activebackground=color,
-        activeforeground="black",
-        activeborderwidth=2,
     )
     file_menu.add_command(label="New file", command=partial(new_file_popup, window))
     file_menu.add_command(
@@ -334,13 +335,9 @@ def create_widgets(window):
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=window.destroy)
 
-    drives_menu = tk.Menu(
+    drives_menu = ttk.Menu(
         bar,
         tearoff=False,
-        background="white",
-        activebackground=color,
-        activeforeground="black",
-        activeborderwidth=2,
     )
     for drive in available_drives:
         drives_menu.add_command(
@@ -350,49 +347,60 @@ def create_widgets(window):
             ),
         )
 
-    preferences_menu = tk.Menu(
-        bar,
-        tearoff=False,
-        background="white",
-        activebackground=color,
-        activeforeground="black",
-        activeborderwidth=2,
+    stats_menu = ttk.Menu(bar, tearoff=False)
+    stats_menu.add_command(
+        label="Drive Statistics", command=partial(drive_stats, window)
     )
 
-    sub_themes = tk.Menu(
+    preferences_menu = ttk.Menu(
         bar,
         tearoff=False,
-        background="white",
-        activebackground=color,
-        activeforeground="black",
-        activeborderwidth=2,
     )
-    sub_themes.add_command(
-        label="Light blue", command=partial(write_color, lblue, window)
-    )
-    sub_themes.add_command(label="Purple", command=partial(write_color, purple, window))
-    sub_themes.add_command(
-        label="Light Green", command=partial(write_color, lgreen, window)
-    )
-    sub_themes.add_command(label="Coral", command=partial(write_color, coral, window))
-    sub_themes.add_command(
-        label="Light Gold", command=partial(write_color, lgold, window)
-    )
-    sub_themes.add_command(label="White", command=partial(write_color, default, window))
-    preferences_menu.add_cascade(label="Color", menu=sub_themes)
 
-    about_menu = tk.Menu(
+    sub_themes = ttk.Menu(
         bar,
         tearoff=False,
-        background="white",
-        activebackground=color,
-        activeforeground="black",
-        activeborderwidth=2,
     )
-    about_menu.add_command(label="About the app", command=partial(about_popup, window))
+    sub_themes.add_command(label="Darkly", command=partial(write_theme, Darkly, window))
+    sub_themes.add_command(
+        label="Solar Dark", command=partial(write_theme, solarD, window)
+    )
+    sub_themes.add_command(
+        label="Superhero Dark", command=partial(write_theme, superheroD, window)
+    )
+    sub_themes.add_command(
+        label="Cyborg Dark", command=partial(write_theme, CyborgD, window)
+    )
+    sub_themes.add_command(
+        label="Vapor Dark", command=partial(write_theme, VaporD, window)
+    )
+    sub_themes.add_separator()
+    sub_themes.add_command(
+        label="Litera Light", command=partial(write_theme, literaL, window)
+    )
+    sub_themes.add_command(
+        label="Minty Light", command=partial(write_theme, mintyL, window)
+    )
+    sub_themes.add_command(
+        label="Morph Light", command=partial(write_theme, morphL, window)
+    )
+    sub_themes.add_command(
+        label="Yeti Light", command=partial(write_theme, yetiL, window)
+    )
+    preferences_menu.add_cascade(label="Themes", menu=sub_themes)
+
+    about_menu = ttk.Menu(
+        bar,
+        tearoff=False,
+    )
+    about_menu.add_command(
+        label="About the app",
+        command=partial(about_popup, window),
+    )
 
     bar.add_cascade(label="File", menu=file_menu, underline=0)
     bar.add_cascade(label="Select drive", menu=drives_menu, underline=0)
+    bar.add_cascade(label="Stats", menu=stats_menu, underline=0)
     bar.add_cascade(label="Preferences", menu=preferences_menu, underline=0)
     bar.add_cascade(label="About", menu=about_menu, underline=0)
     # --Menu bar
@@ -416,16 +424,16 @@ def create_widgets(window):
     return cwdLabel, items, folderIcon, fileIcon, footer
 
 
-def write_color(color, window):
-    with open(file_path + "../res/color.txt", "w") as f:  # closes file automatically
-        f.write(color)
+def write_theme(theme, window):
+    with open(file_path + "../res/theme.txt", "w") as f:  # closes file automatically
+        f.write(theme)
     warning_popup(window)
 
 
 def warning_popup(window):
     top = tk.Toplevel(window)
     top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "icon.png"))
+    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
     top.title("Info")
     top.geometry("320x60")
 
@@ -433,12 +441,48 @@ def warning_popup(window):
     lb.pack()
 
 
+def drive_stats(window):
+    top = tk.Toplevel(window)
+    top.resizable(False, False)
+    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
+    top.title("Statistics")
+
+    meters = []
+    for drive in available_drives:
+        shutil.disk_usage(drive)
+        meters.append(
+            ttk.Meter(
+                top,
+                bootstyle="default",
+                metersize=180,
+                padding=5,
+                metertype="semi",
+                subtext="GB Used",
+                textright="/ "
+                + str(
+                    round(shutil.disk_usage(drive).total / 1 * 10**-9)
+                ),  # converts bytes to GB
+                textleft=drive,
+                interactive=False,
+                amounttotal=round(
+                    shutil.disk_usage(drive).total / 1 * 10**-9
+                ),  # converts bytes to GB
+                amountused=round(
+                    shutil.disk_usage(drive).used / 1 * 10**-9
+                ),  # converts bytes to GB
+            )
+        )
+    top.geometry(str(len(meters) * 200) + "x200")  # Add 200px width for every drive
+    for meter in meters:
+        meter.pack(side=tk.LEFT, expand=True, fill=tk.X)
+
+
 def cd_drive(drive, cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
     global fileNames, currDrive
     cwdLabel.config(text=" " + drive)
     currDrive = drive
     fileNames = os.listdir(currDrive)
-    os.chdir(currDrive + "\\")
+    os.chdir(currDrive + "/")
     refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames)
 
 
@@ -481,7 +525,7 @@ def rename_popup(window, items):
     top = tk.Toplevel(window)
     top.geometry("300x50")
     top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "icon.png"))
+    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
     if items.focus() != "":
         top.title("Rename selected")
 
@@ -499,7 +543,7 @@ def rename_popup(window, items):
 
 
 def rename_f(nameEntry, top, event):
-    old = os.getcwd() + "\\" + selectedItem
+    old = os.getcwd() + "/" + selectedItem
     os.rename(old, nameEntry.get())
     top.destroy()
 
@@ -521,11 +565,11 @@ def about_popup(window):  # popup window
     top.geometry("300x100")
     top.title("About")
     top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "icon.png"))
+    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
 
     lb = ttk.Label(top, text="My file explorer")
     lb2 = ttk.Label(top, text="Made by: Chris Tsouchlakis")
-    lb3 = ttk.Label(top, text="Version 0.2.0")
+    lb3 = ttk.Label(top, text="Version 0.2.1")
 
     lb.pack(pady=10)
     lb2.pack(pady=1)
@@ -537,7 +581,7 @@ def new_file_popup(window):
     top.geometry("200x50")
     top.title("New file")
     top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "icon.png"))
+    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
 
     lb = ttk.Label(top, text="File name:")
     nameEntry = ttk.Entry(top, width=25)
@@ -550,7 +594,7 @@ def new_file_popup(window):
 
 def new_file(nameEntry, top, event):
     if nameEntry.get() != "":
-        f = open(os.getcwd() + "\\" + nameEntry.get(), "x")
+        f = open(os.getcwd() + "/" + nameEntry.get(), "x")
         f.close()
         top.destroy()
 
@@ -558,7 +602,7 @@ def new_file(nameEntry, top, event):
 def del_file_popup(items, window):
     top = tk.Toplevel(window)
     top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "icon.png"))
+    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
 
     if items.focus() != "":  # if there is a focused item
         top.title("Warning")
@@ -585,23 +629,24 @@ def del_file_popup(items, window):
 
 
 def del_file(top):
-    if os.path.isfile(os.getcwd() + "\\" + selectedItem):
-        os.remove(os.getcwd() + "\\" + selectedItem)
-    elif os.path.isdir(os.getcwd() + "\\" + selectedItem):
-        os.rmdir(os.getcwd() + "\\" + selectedItem)
+    if os.path.isfile(os.getcwd() + "/" + selectedItem):
+        os.remove(os.getcwd() + "/" + selectedItem)
+    elif os.path.isdir(os.getcwd() + "/" + selectedItem):
+        # os.rmdir(os.getcwd() + "/" + selectedItem)
+        shutil.rmtree(os.getcwd() + "/" + selectedItem)
     top.destroy()
 
 
 def main():
-    global color, file_path
-    file_path = os.path.join(os.path.dirname(__file__), "..\\icons\\")
+    global theme, file_path
+    file_path = os.path.join(os.path.dirname(__file__), "../icons/")
+    print(file_path)
+    with open(file_path + "../res/theme.txt") as f:  # closes file automatically
+        theme = f.readline()
+    if theme == "":  # if theme.txt is empty, set default theme
+        theme = Darkly
     # Main window
     root = createWindow()
-    with open(file_path + "../res/color.txt") as f:  # closes file automatically
-        color = f.readline()
-    if color == "":  # if color.txt is empty, set default color
-        color = default
-    # sv_ttk.set_theme("light")
 
     cwdLabel, items, folderIcon, fileIcon, footer = create_widgets(root)
     refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
