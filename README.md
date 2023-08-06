@@ -32,4 +32,10 @@ A simple file explorer made in Python and Tkinter.
 
 ## Screenshots
 
-![Alt text](https://github.com/ChrisTs8920/py-file-explorer/blob/main/screenshots/Screenshot_1.jpg?raw=True)
+### Litera Light
+
+![Litera](https://github.com/ChrisTs8920/py-file-explorer/blob/main/screenshots/Screenshot_1.jpg?raw=True)
+
+### Darkly
+
+![Darkly](https://github.com/ChrisTs8920/py-file-explorer/blob/main/screenshots/Screenshot_2.jpg?raw=True)
