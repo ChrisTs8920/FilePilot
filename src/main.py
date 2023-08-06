@@ -250,16 +250,19 @@ def create_widgets(window):
         headerFrame,
         image=backArrowIcon,
         command=partial(previous, cwdLabel, items, folderIcon, fileIcon, footer),
+        bootstyle="light",
     )
     forwardButton = ttk.Button(
         headerFrame,
         image=frontArrowIcon,
         command=partial(next, cwdLabel, items, folderIcon, fileIcon, footer),
+        bootstyle="light",
     )
     refreshButton = ttk.Button(
         headerFrame,
         command=partial(refresh, cwdLabel, items, folderIcon, fileIcon, footer, []),
         image=refreshIcon,
+        bootstyle="light",
     )
     # keep references for buttons
     backButton.img_reference = backArrowIcon
@@ -623,11 +626,9 @@ def del_file_popup(items, window):
             top, text="Are you sure?\nThis file/directory will be deleted permanently."
         )
         delbtn = ttk.Button(
-            top,
-            text="DELETE",
-            command=partial(del_file, top),
+            top, text="DELETE", command=partial(del_file, top), bootstyle="light"
         )
-        cnbtn = ttk.Button(top, text="CANCEL", command=top.destroy)
+        cnbtn = ttk.Button(top, text="CANCEL", command=top.destroy, bootstyle="light")
 
         lb.pack()
         delbtn.pack()
