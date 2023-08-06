@@ -228,6 +228,7 @@ def create_widgets(window):
     # Footer Frame
     footerFrame = ttk.Frame(window)
     footer = ttk.Label(footerFrame)
+    grip = ttk.Sizegrip(footerFrame, bootstyle="default")
     # --Footer Frame
 
     folderIcon = tk.PhotoImage(file=file_path + "Folder-icon.png", width=20, height=16)
@@ -299,7 +300,7 @@ def create_widgets(window):
     )
     # --Right click menu
 
-    s.configure(".", font=("TkDefaultFont", 10))
+    s.configure(".", font=("TkDefaultFont", 10))  # set font size
     s.configure("Treeview", rowheight=28)  # customize treeview
     s.layout("Treeview", [("Treeview.treearea", {"sticky": "nswe"})])  # remove borders
 
@@ -362,7 +363,7 @@ def create_widgets(window):
     preferences_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
 
     sub_themes = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
-    sub_themes.add_command(label="Darkly", command=partial(write_theme, Darkly, window))
+    sub_themes.add_command(label="Darkly", command=partial(write_theme, Darkly))
     sub_themes.add_command(label="Solar Dark", command=partial(write_theme, solarD))
     sub_themes.add_command(
         label="Superhero Dark", command=partial(write_theme, superheroD)
@@ -396,6 +397,7 @@ def create_widgets(window):
     cwdLabel.pack(side=tk.LEFT, padx=5, pady=10, fill=tk.BOTH, expand=True)
     refreshButton.pack(side=tk.LEFT, padx=1, pady=10, fill=tk.BOTH)
     searchEntry.pack(side=tk.LEFT, padx=5, pady=10, fill=tk.BOTH)
+    grip.pack(side=tk.RIGHT, fill=tk.BOTH, padx=2, pady=2)
 
     headerFrame.pack(fill=tk.X)
     browseFrame.pack(fill=tk.BOTH, expand=True)
