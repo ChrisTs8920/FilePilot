@@ -10,6 +10,7 @@ import shutil
 # from PIL import Image, ImageTk
 
 import ttkbootstrap as ttk
+from ttkbootstrap.tooltip import ToolTip
 
 import ext
 
@@ -264,6 +265,11 @@ def create_widgets(window):
         image=refreshIcon,
         bootstyle="light",
     )
+
+    # tooltips for buttons
+    ToolTip(backButton, text="Back", bootstyle=("default", "inverse"))
+    ToolTip(forwardButton, text="Forward", bootstyle=("default", "inverse"))
+    ToolTip(refreshButton, text="Refresh", bootstyle=("default", "inverse"))
     # keep references for buttons
     backButton.img_reference = backArrowIcon
     forwardButton.img_reference = frontArrowIcon
