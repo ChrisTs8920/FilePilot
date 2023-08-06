@@ -271,7 +271,7 @@ def create_widgets(window):
     # --Header Frame
 
     # Right click menu
-    m = ttk.Menu(window, tearoff=False)
+    m = ttk.Menu(window, tearoff=False, font=("TkDefaultFont", 10))
     # m.add_command(label="Cut")
     # m.add_command(label="Copy")
     # m.add_command(label="Paste")
@@ -298,6 +298,7 @@ def create_widgets(window):
     )
     # --Right click menu
 
+    s.configure(".", font=("TkDefaultFont", 10))
     s.configure("Treeview", rowheight=28)  # customize treeview
     s.layout("Treeview", [("Treeview.treearea", {"sticky": "nswe"})])  # remove borders
 
@@ -321,16 +322,13 @@ def create_widgets(window):
     # --Browse Frame
 
     # Menu bar
-    bar = ttk.Menu(window)
+    bar = ttk.Menu(window, font=("TkDefaultFont", 10))
     window.config(menu=bar)
 
     # image = Image.open(file_path + "icon.png")
     # photo = ImageTk.PhotoImage(image)
 
-    file_menu = ttk.Menu(
-        bar,
-        tearoff=False,
-    )
+    file_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     # ile_menu.img_reference = photo  # keep img reference
     file_menu.add_command(
         label="New file",
@@ -349,10 +347,7 @@ def create_widgets(window):
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=window.destroy)
 
-    drives_menu = ttk.Menu(
-        bar,
-        tearoff=False,
-    )
+    drives_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     for drive in available_drives:
         drives_menu.add_command(
             label=drive,
@@ -361,20 +356,14 @@ def create_widgets(window):
             ),
         )
 
-    stats_menu = ttk.Menu(bar, tearoff=False)
+    stats_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     stats_menu.add_command(
         label="Drive Capacities", command=partial(drive_stats, window)
     )
 
-    preferences_menu = ttk.Menu(
-        bar,
-        tearoff=False,
-    )
+    preferences_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
 
-    sub_themes = ttk.Menu(
-        bar,
-        tearoff=False,
-    )
+    sub_themes = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     sub_themes.add_command(label="Darkly", command=partial(write_theme, Darkly, window))
     sub_themes.add_command(
         label="Solar Dark", command=partial(write_theme, solarD, window)
@@ -403,10 +392,7 @@ def create_widgets(window):
     )
     preferences_menu.add_cascade(label="Themes", menu=sub_themes)
 
-    about_menu = ttk.Menu(
-        bar,
-        tearoff=False,
-    )
+    about_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     about_menu.add_command(
         label="About the app",
         command=partial(about_popup, window),
