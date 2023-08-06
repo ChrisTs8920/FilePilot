@@ -7,6 +7,8 @@ from functools import partial
 from sys import platform
 import shutil
 
+# from PIL import Image, ImageTk
+
 import ttkbootstrap as ttk
 
 import ext
@@ -60,7 +62,7 @@ def createWindow():
     # root = tk.Tk()
     root = ttk.Window(themename=theme)
     root.title("My File Explorer")
-    root.geometry("1024x600")
+    root.geometry("1280x720")
     root.resizable(True, True)
     root.iconphoto(False, tk.PhotoImage(file=file_path + "icon.png"))
     return root
@@ -319,11 +321,20 @@ def create_widgets(window):
     bar = ttk.Menu(window)
     window.config(menu=bar)
 
+    # image = Image.open(file_path + "icon.png")
+    # photo = ImageTk.PhotoImage(image)
+
     file_menu = ttk.Menu(
         bar,
         tearoff=False,
     )
-    file_menu.add_command(label="New file", command=partial(new_file_popup, window))
+    # ile_menu.img_reference = photo  # keep img reference
+    file_menu.add_command(
+        label="New file",
+        # image=photo,
+        # compound="left",
+        command=partial(new_file_popup, window),
+    )
     file_menu.add_command(
         label="Rename selected", command=partial(rename_popup, window, items)
     )
@@ -349,7 +360,7 @@ def create_widgets(window):
 
     stats_menu = ttk.Menu(bar, tearoff=False)
     stats_menu.add_command(
-        label="Drive Statistics", command=partial(drive_stats, window)
+        label="Drive Capacities", command=partial(drive_stats, window)
     )
 
     preferences_menu = ttk.Menu(
@@ -445,7 +456,7 @@ def drive_stats(window):
     top = tk.Toplevel(window)
     top.resizable(False, False)
     top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
-    top.title("Statistics")
+    top.title("Drives")
 
     meters = []
     for drive in available_drives:
@@ -640,7 +651,6 @@ def del_file(top):
 def main():
     global theme, file_path
     file_path = os.path.join(os.path.dirname(__file__), "../icons/")
-    print(file_path)
     with open(file_path + "../res/theme.txt") as f:  # closes file automatically
         theme = f.readline()
     if theme == "":  # if theme.txt is empty, set default theme

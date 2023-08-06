@@ -11,6 +11,6 @@ if __name__ != "__main__":
             fileTypes[i] = "Directory"
         else:
             if ext == "":
-                fileTypes[i] = "UNKNOWN file"
+                fileTypes[i] = "Unknown file"
             else:
                 fileTypes[i] = ext.upper()[1:] + " file"
