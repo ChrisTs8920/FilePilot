@@ -3,6 +3,7 @@
 ## Version 0.2.1
 
 - Fixed some directories not opening
+- Minor naming changes
 
 ## Version 0.2.0
 
