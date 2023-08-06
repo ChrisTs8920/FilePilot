@@ -11,6 +11,8 @@ import shutil
 
 import ttkbootstrap as ttk
 from ttkbootstrap.tooltip import ToolTip
+from ttkbootstrap.dialogs.dialogs import Messagebox
+from ttkbootstrap.dialogs.dialogs import Querybox
 
 import ext
 
@@ -160,7 +162,6 @@ def next(cwdLabel, items, folderIcon, fileIcon, footer):
 
 # open file
 def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
-    print(event)
     iid = items.identify_row(event.y)
     if iid == "":  # if double click on blank, don't do anything
         return
@@ -288,15 +289,9 @@ def create_widgets(window):
         ),
     )"""
     # m.add_separator()
-    m.add_command(label="New file", command=partial(new_file_popup, window))
-    m.add_command(
-        label="Rename selected",
-        command=partial(rename_popup, window, items),
-    )
-    m.add_command(
-        label="Delete selected",
-        command=partial(del_file_popup, items, window),
-    )
+    m.add_command(label="New file", command=partial(new_file_popup))
+    m.add_command(label="Rename selected", command=partial(rename_popup, items))
+    m.add_command(label="Delete selected", command=partial(del_file_popup, items))
     m.add_separator()
     m.add_command(
         label="Refresh",
@@ -340,14 +335,11 @@ def create_widgets(window):
         label="New file",
         # image=photo,
         # compound="left",
-        command=partial(new_file_popup, window),
+        command=new_file_popup,
     )
+    file_menu.add_command(label="Rename selected", command=partial(rename_popup, items))
     file_menu.add_command(
-        label="Rename selected", command=partial(rename_popup, window, items)
-    )
-    file_menu.add_command(
-        label="Delete selected",
-        command=partial(del_file_popup, items, window),
+        label="Delete selected", command=partial(del_file_popup, items)
     )
     # file_menu.add_command(label="Create directory", command=new_dir)
     file_menu.add_separator()
@@ -371,37 +363,23 @@ def create_widgets(window):
 
     sub_themes = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     sub_themes.add_command(label="Darkly", command=partial(write_theme, Darkly, window))
+    sub_themes.add_command(label="Solar Dark", command=partial(write_theme, solarD))
     sub_themes.add_command(
-        label="Solar Dark", command=partial(write_theme, solarD, window)
+        label="Superhero Dark", command=partial(write_theme, superheroD)
     )
-    sub_themes.add_command(
-        label="Superhero Dark", command=partial(write_theme, superheroD, window)
-    )
-    sub_themes.add_command(
-        label="Cyborg Dark", command=partial(write_theme, CyborgD, window)
-    )
-    sub_themes.add_command(
-        label="Vapor Dark", command=partial(write_theme, VaporD, window)
-    )
+    sub_themes.add_command(label="Cyborg Dark", command=partial(write_theme, CyborgD))
+    sub_themes.add_command(label="Vapor Dark", command=partial(write_theme, VaporD))
     sub_themes.add_separator()
-    sub_themes.add_command(
-        label="Litera Light", command=partial(write_theme, literaL, window)
-    )
-    sub_themes.add_command(
-        label="Minty Light", command=partial(write_theme, mintyL, window)
-    )
-    sub_themes.add_command(
-        label="Morph Light", command=partial(write_theme, morphL, window)
-    )
-    sub_themes.add_command(
-        label="Yeti Light", command=partial(write_theme, yetiL, window)
-    )
+    sub_themes.add_command(label="Litera Light", command=partial(write_theme, literaL))
+    sub_themes.add_command(label="Minty Light", command=partial(write_theme, mintyL))
+    sub_themes.add_command(label="Morph Light", command=partial(write_theme, morphL))
+    sub_themes.add_command(label="Yeti Light", command=partial(write_theme, yetiL))
     preferences_menu.add_cascade(label="Themes", menu=sub_themes)
 
     about_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     about_menu.add_command(
         label="About the app",
-        command=partial(about_popup, window),
+        command=about_popup,
     )
 
     bar.add_cascade(label="File", menu=file_menu, underline=0)
@@ -430,21 +408,16 @@ def create_widgets(window):
     return cwdLabel, items, folderIcon, fileIcon, footer
 
 
-def write_theme(theme, window):
+def write_theme(theme):
     with open(file_path + "../res/theme.txt", "w") as f:  # closes file automatically
         f.write(theme)
-    warning_popup(window)
+    warning_popup()
 
 
-def warning_popup(window):
-    top = tk.Toplevel(window)
-    top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
-    top.title("Info")
-    top.geometry("320x60")
-
-    lb = ttk.Label(top, text="Please restart the application to apply changes.")
-    lb.pack()
+def warning_popup():
+    Messagebox.show_info(
+        message="Please restart the application to apply changes", title="Info"
+    )
 
 
 def drive_stats(window):
@@ -527,31 +500,18 @@ def FocusOut(searchEntry, window, event):
     window.focus()
 
 
-def rename_popup(window, items):
-    top = tk.Toplevel(window)
-    top.geometry("300x50")
-    top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
+def rename_popup(items):
     if items.focus() != "":
-        top.title("Rename selected")
-
-        lb = ttk.Label(top, text="New name:")
-        nameEntry = ttk.Entry(top, width=25)
-
-        lb.pack()
-        nameEntry.pack()
-
-        nameEntry.bind("<Return>", partial(rename_f, nameEntry, top))
+        try:
+            name = Querybox.get_string(prompt="Name: ", title="Rename")
+            old = os.getcwd() + "/" + selectedItem
+            os.rename(old, name)
+        except:
+            pass
     else:
-        top.title("Info")
-        lb = ttk.Label(top, text="There is no selected file or directory.")
-        lb.pack()
-
-
-def rename_f(nameEntry, top, event):
-    old = os.getcwd() + "/" + selectedItem
-    os.rename(old, nameEntry.get())
-    top.destroy()
+        Messagebox.show_info(
+            message="There is no selected file or directory.", title="Info"
+        )
 
 
 def selectItem(items, event):
@@ -566,79 +526,45 @@ def selectItem(items, event):
         pass
 
 
-def about_popup(window):  # popup window
-    top = tk.Toplevel(window)
-    top.geometry("300x100")
-    top.title("About")
-    top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
-
-    lb = ttk.Label(top, text="My file explorer")
-    lb2 = ttk.Label(top, text="Made by: Chris Tsouchlakis")
-    lb3 = ttk.Label(top, text="Version 0.2.1")
-
-    lb.pack(pady=10)
-    lb2.pack(pady=1)
-    lb3.pack(pady=1)
+def about_popup():  # popup window
+    Messagebox.ok(
+        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.2.1",
+        title="About",
+    )
 
 
-def new_file_popup(window):
-    top = tk.Toplevel(window)
-    top.geometry("200x50")
-    top.title("New file")
-    top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
-
-    lb = ttk.Label(top, text="File name:")
-    nameEntry = ttk.Entry(top, width=25)
-
-    lb.pack()
-    nameEntry.pack()
-
-    nameEntry.bind("<Return>", partial(new_file, nameEntry, top))
+def new_file_popup():
+    name: str = Querybox.get_string(prompt="Name: ", title="New file")
+    if name != "":
+        try:
+            f = open(os.getcwd() + "/" + name, "x")
+            f.close()
+        except:
+            pass
 
 
-def new_file(nameEntry, top, event):
-    if nameEntry.get() != "":
-        f = open(os.getcwd() + "/" + nameEntry.get(), "x")
-        f.close()
-        top.destroy()
-
-
-def del_file_popup(items, window):
-    top = tk.Toplevel(window)
-    top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
-
+def del_file_popup(items):
     if items.focus() != "":  # if there is a focused item
-        top.title("Warning")
-        top.geometry("300x120")
-
-        lb = ttk.Label(
-            top, text="Are you sure?\nThis file/directory will be deleted permanently."
+        answer = Messagebox.yesno(
+            message="Are you sure?\nThis file/directory will be deleted permanently.",
+            alert=True,
         )
-        delbtn = ttk.Button(
-            top, text="DELETE", command=partial(del_file, top), bootstyle="light"
-        )
-        cnbtn = ttk.Button(top, text="CANCEL", command=top.destroy, bootstyle="light")
-
-        lb.pack()
-        delbtn.pack()
-        cnbtn.pack(pady=5)
+        if answer == "Yes":
+            del_file()
+        else:
+            return
     else:
-        top.geometry("250x50")
-        top.title("Info")
-        lb = ttk.Label(top, text="There is no selected file or directory.")
-        lb.pack()
+        Messagebox.show_info(
+            message="There is no selected file or directory.", title="Info"
+        )
 
 
-def del_file(top):
+def del_file():
     if os.path.isfile(os.getcwd() + "/" + selectedItem):
         os.remove(os.getcwd() + "/" + selectedItem)
     elif os.path.isdir(os.getcwd() + "/" + selectedItem):
         # os.rmdir(os.getcwd() + "/" + selectedItem)
         shutil.rmtree(os.getcwd() + "/" + selectedItem)
-    top.destroy()
 
 
 def main():
