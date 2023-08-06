@@ -1,6 +1,6 @@
 # Change Log
 
-## Version 0.2.2 (in progress)
+## Version 0.2.2
 
 - Reworked pop-ups
 - Added tooltip to buttons
