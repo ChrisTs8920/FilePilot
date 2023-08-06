@@ -20,7 +20,7 @@ import ext
 # Linux compatibility,
 # Add scaling,
 # grab file icons from files (Or pillow library),
-# improve extension handling,
+# Copy - Paste,
 # break into modules,
 # editable path,
 # column sorting,
@@ -31,7 +31,6 @@ fileNames = []
 file_path = ""  # path of main.py
 lastDirectory = ""
 selectedItem = ""  # focused item on Treeview
-fileSizesSum = 0  # total file size of current directory
 
 if platform == "win32":
     available_drives = [
@@ -56,9 +55,6 @@ literaL = "litera"
 mintyL = "minty"
 morphL = "morph"
 yetiL = "yeti"
-
-# scales
-s100 = 28  # 100% scale
 
 
 def createWindow():
@@ -290,7 +286,9 @@ def create_widgets(window):
         ),
     )"""
     # m.add_separator()
-    m.add_command(label="New file", command=partial(new_file_popup))
+    m.add_command(label="New file", command=new_file_popup)
+    m.add_command(label="New directory", command=new_dir_popup)
+    m.add_separator()
     m.add_command(label="Rename selected", command=partial(rename_popup, items))
     m.add_command(label="Delete selected", command=partial(del_file_popup, items))
     m.add_separator()
@@ -338,6 +336,8 @@ def create_widgets(window):
         # compound="left",
         command=new_file_popup,
     )
+    file_menu.add_command(label="New directory", command=new_dir_popup)
+    file_menu.add_separator()
     file_menu.add_command(label="Rename selected", command=partial(rename_popup, items))
     file_menu.add_command(
         label="Delete selected", command=partial(del_file_popup, items)
@@ -375,7 +375,16 @@ def create_widgets(window):
     sub_themes.add_command(label="Minty Light", command=partial(write_theme, mintyL))
     sub_themes.add_command(label="Morph Light", command=partial(write_theme, morphL))
     sub_themes.add_command(label="Yeti Light", command=partial(write_theme, yetiL))
+
+    sub_scale = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    sub_scale.add_command(label="150%", command=partial(change_scale, 1.5, s))
+    sub_scale.add_command(label="125%", command=partial(change_scale, 1.25, s))
+    sub_scale.add_command(label="100%", command=partial(change_scale, 1.0, s))
+    sub_scale.add_command(label="75%", command=partial(change_scale, 0.75, s))
+    sub_scale.add_command(label="50%", command=partial(change_scale, 0.5, s))
+
     preferences_menu.add_cascade(label="Themes", menu=sub_themes)
+    preferences_menu.add_cascade(label="Scale", menu=sub_scale)
 
     about_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     about_menu.add_command(
@@ -420,6 +429,12 @@ def warning_popup():
     Messagebox.show_info(
         message="Please restart the application to apply changes", title="Info"
     )
+
+
+def change_scale(multiplier, s):
+    scale = round(multiplier * 28)  # 28 is default
+    print(scale)
+    s.configure("Treeview", rowheight=scale)
 
 
 def drive_stats(window):
@@ -536,11 +551,20 @@ def about_popup():  # popup window
 
 
 def new_file_popup():
-    name: str = Querybox.get_string(prompt="Name: ", title="New file")
+    name = Querybox.get_string(prompt="Name: ", title="New file")
     if name != "":
         try:
             f = open(os.getcwd() + "/" + name, "x")
             f.close()
+        except:
+            pass
+
+
+def new_dir_popup():
+    name = Querybox.get_string(prompt="Name: ", title="New directory")
+    if name != "":
+        try:
+            os.mkdir(os.getcwd() + "/" + name)
         except:
             pass
 
