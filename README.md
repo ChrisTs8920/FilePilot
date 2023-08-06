@@ -24,7 +24,7 @@ A simple file explorer made in Python and Tkinter.
 - Will attempt Linux compatability
 - Add Scaling
 - Add more icons
-- Improve extension handling
+- Add Copy - Paste
 - Add editable path
 - Add column sorting
 - Break into modules
