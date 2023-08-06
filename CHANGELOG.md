@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 0.2.2 (in progress)
+
+- Reworked pop-ups
+- Added tooltip to buttons
+- Added Size grip
+
 ## Version 0.2.1
 
 - Fixed some directories not opening
