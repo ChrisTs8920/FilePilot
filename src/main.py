@@ -530,7 +530,7 @@ def selectItem(items, event):
 
 def about_popup():  # popup window
     Messagebox.ok(
-        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.2.1",
+        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.2.2",
         title="About",
     )
 
