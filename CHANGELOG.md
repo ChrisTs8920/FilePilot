@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 0.3.0
+
+- Added the ability to create directories
+- Added UI Scaling
+- Added copy - paste function (uses threads so that ui does not hang on large files)
+
 ## Version 0.2.2
 
 - Reworked pop-ups
