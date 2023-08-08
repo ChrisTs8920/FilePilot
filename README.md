@@ -8,13 +8,19 @@ A simple file explorer made in Python and Tkinter.
 ### Features
 
 - View, Open files and directories
+- Copy and Paste files and directories
 - Create, Delete and Rename files and directories
 - Search for files in current directory
 - Themes using [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
+## Requirements
+
+- Python 3.8+
+- ttkbootsrap (version tested 1.10.1)
+
 ## How to run
 
-1. Install ttkbootstrap ```pip install ttkbootstrap```
+1. ```pip install ttkbootstrap```
 2. Execute ```py main.py```
 
 *Tested on Windows 11.*
@@ -22,9 +28,9 @@ A simple file explorer made in Python and Tkinter.
 ## To do
 
 - Will attempt Linux compatability
-- Add Scaling
+- Auto refresh on action (new file, new directory, rename, etc.)
 - Add more icons
-- Add Copy - Paste
+- Improve copy paste - add keybinds
 - Add editable path
 - Add column sorting
 - Break into modules
