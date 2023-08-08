@@ -6,6 +6,7 @@ from datetime import datetime
 from functools import partial
 from sys import platform
 import shutil
+import threading
 
 # from PIL import Image, ImageTk
 
@@ -18,9 +19,9 @@ import ext
 
 # TODO:
 # Linux compatibility,
-# Add scaling,
+# Auto refresh on action (new file, new directory, rename, etc.)
 # grab file icons from files (Or pillow library),
-# Copy - Paste,
+# Improve Copy - Paste (keybinds),
 # break into modules,
 # editable path,
 # column sorting,
@@ -31,6 +32,7 @@ fileNames = []
 file_path = ""  # path of main.py
 lastDirectory = ""
 selectedItem = ""  # focused item on Treeview
+src = ""  # temp path for copying
 
 if platform == "win32":
     available_drives = [
@@ -277,8 +279,6 @@ def create_widgets(window):
     # Right click menu
     m = ttk.Menu(window, tearoff=False, font=("TkDefaultFont", 10))
     # m.add_command(label="Cut")
-    # m.add_command(label="Copy")
-    # m.add_command(label="Paste")
     """m.add_command(
         label="Open",
         command=partial(
@@ -289,6 +289,8 @@ def create_widgets(window):
     m.add_command(label="New file", command=new_file_popup)
     m.add_command(label="New directory", command=new_dir_popup)
     m.add_separator()
+    m.add_command(label="Copy Selected", command=partial(copy, items))
+    m.add_command(label="Paste Selected", command=paste)
     m.add_command(label="Rename selected", command=partial(rename_popup, items))
     m.add_command(label="Delete selected", command=partial(del_file_popup, items))
     m.add_separator()
@@ -338,6 +340,8 @@ def create_widgets(window):
     )
     file_menu.add_command(label="New directory", command=new_dir_popup)
     file_menu.add_separator()
+    file_menu.add_command(label="Copy Selected", command=partial(copy, items))
+    file_menu.add_command(label="Paste Selected", command=paste)
     file_menu.add_command(label="Rename selected", command=partial(rename_popup, items))
     file_menu.add_command(
         label="Delete selected", command=partial(del_file_popup, items)
@@ -433,7 +437,6 @@ def warning_popup():
 
 def change_scale(multiplier, s):
     scale = round(multiplier * 28)  # 28 is default
-    print(scale)
     s.configure("Treeview", rowheight=scale)
 
 
@@ -545,7 +548,7 @@ def selectItem(items, event):
 
 def about_popup():  # popup window
     Messagebox.ok(
-        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.2.2",
+        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.3.0",
         title="About",
     )
 
@@ -567,6 +570,48 @@ def new_dir_popup():
             os.mkdir(os.getcwd() + "/" + name)
         except:
             pass
+
+
+def copy(items):
+    global src
+    if items.focus() != "":  # if there is a focused item
+        src = os.getcwd() + "/" + selectedItem
+
+
+def paste():
+    global src
+    dest = os.getcwd() + "/"
+    if not os.path.isdir(src) and src != "":
+        t1 = threading.Thread(
+            target=shutil.copy2, args=(src, dest)
+        )  # use threads so gui does not hang on large file copy
+        t2 = threading.Thread(target=paste_popup, args=([t1]))
+        t1.start()
+        t2.start()
+    elif os.path.isdir(src) and src != "":
+        new_dest_dir = os.path.join(dest, os.path.basename(src))
+        os.makedirs(new_dest_dir)
+        t1 = threading.Thread(  # use threads so gui does not hang on large directory copy
+            target=shutil.copytree,
+            args=(src, new_dest_dir, False, None, shutil.copy2, False, True),
+        )
+        t2 = threading.Thread(target=paste_popup, args=([t1]))
+        t1.start()
+        t2.start()
+
+
+def paste_popup(t1):
+    top = ttk.Toplevel(title="Progress")
+    top.geometry("250x50")
+    top.resizable(False, False)
+
+    gauge = ttk.Floodgauge(
+        top, bootstyle="success", mode="indeterminate", text="Copying files.."
+    )
+    gauge.pack(fill=tk.BOTH, expand=tk.YES)
+    gauge.start()
+    t1.join()
+    top.destroy()
 
 
 def del_file_popup(items):
