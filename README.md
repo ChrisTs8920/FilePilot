@@ -30,7 +30,7 @@ A simple file explorer made in Python and Tkinter.
 - Will attempt Linux compatability
 - Auto refresh on action (new file, new directory, rename, etc.)
 - Add more icons
-- Improve copy paste - add keybinds
+- Add move file function
 - Add editable path
 - Add column sorting
 - Break into modules
