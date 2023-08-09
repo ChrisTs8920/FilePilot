@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 0.3.1
+
+- Fixed a bug where right click wasn't always focusing an item
+- Fixed same file exception on copy
+- Added keybinds (see Help menu)
+
 ## Version 0.3.0
 
 - Added the ability to create directories
