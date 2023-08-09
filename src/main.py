@@ -21,7 +21,7 @@ import ext
 # Linux compatibility,
 # Auto refresh on action (new file, new directory, rename, etc.)
 # grab file icons from files (Or pillow library),
-# Improve Copy - Paste (keybinds),
+# Improve Copy - Paste,
 # break into modules,
 # editable path,
 # column sorting,
@@ -143,6 +143,12 @@ def refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
     # --Refresh Footer
 
 
+def wrap_refresh(
+    cwdLabel, items, folderIcon, fileIcon, footer, event
+):  # wrapper for F5 bind
+    refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
+
+
 def previous(cwdLabel, items, folderIcon, fileIcon, footer):
     global lastDirectory
     lastDirectory = os.getcwd()
@@ -182,18 +188,8 @@ def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
 
 
 def onRightClick(m, items, event):
-    iid = items.identify_row(event.y)
-    if iid:
-        items.selection_set(iid)
-        global selectedItem
-        selectedItem = items.item(iid)["values"][0]
-        print(selectedItem)
-    else:
-        pass
-    try:
-        m.tk_popup(event.x_root, event.y_root)
-    finally:
-        m.grab_release()
+    selectItem(items, event)
+    m.tk_popup(event.x_root, event.y_root)
 
 
 def search(searchEntry, cwdLabel, items, folderIcon, fileIcon, footer, event):
@@ -278,14 +274,6 @@ def create_widgets(window):
 
     # Right click menu
     m = ttk.Menu(window, tearoff=False, font=("TkDefaultFont", 10))
-    # m.add_command(label="Cut")
-    """m.add_command(
-        label="Open",
-        command=partial(
-            onDoubleClick, cwdLabel, items, folderIcon, fileIcon, footer
-        ),
-    )"""
-    # m.add_separator()
     m.add_command(label="New file", command=new_file_popup)
     m.add_command(label="New directory", command=new_dir_popup)
     m.add_separator()
@@ -364,8 +352,6 @@ def create_widgets(window):
         label="Drive Capacities", command=partial(drive_stats, window)
     )
 
-    preferences_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
-
     sub_themes = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     sub_themes.add_command(label="Darkly", command=partial(write_theme, Darkly))
     sub_themes.add_command(label="Solar Dark", command=partial(write_theme, solarD))
@@ -387,8 +373,12 @@ def create_widgets(window):
     sub_scale.add_command(label="75%", command=partial(change_scale, 0.75, s))
     sub_scale.add_command(label="50%", command=partial(change_scale, 0.5, s))
 
+    preferences_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     preferences_menu.add_cascade(label="Themes", menu=sub_themes)
     preferences_menu.add_cascade(label="Scale", menu=sub_scale)
+
+    help_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    help_menu.add_command(label="Keybinds", command=keybinds)
 
     about_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     about_menu.add_command(
@@ -400,6 +390,7 @@ def create_widgets(window):
     bar.add_cascade(label="Select drive", menu=drives_menu, underline=0)
     bar.add_cascade(label="Stats", menu=stats_menu, underline=0)
     bar.add_cascade(label="Preferences", menu=preferences_menu, underline=0)
+    bar.add_cascade(label="Help", menu=help_menu, underline=0)
     bar.add_cascade(label="About", menu=about_menu, underline=0)
     # --Menu bar
 
@@ -420,6 +411,16 @@ def create_widgets(window):
         "<Return>",
         partial(search, searchEntry, cwdLabel, items, folderIcon, fileIcon, footer),
     )  # on enter press, run search1
+
+    # wrappers for keybinds
+    window.bind(
+        "<F5>", partial(wrap_refresh, cwdLabel, items, folderIcon, fileIcon, footer)
+    )
+    window.bind("<Delete>", partial(wrap_del, items))
+    window.bind("<Control-c>", partial(wrap_copy, items))
+    window.bind("<Control-v>", wrap_paste)
+    window.bind("<Control-Shift-N>", wrap_new_dir)
+
     return cwdLabel, items, folderIcon, fileIcon, footer
 
 
@@ -542,13 +543,23 @@ def selectItem(items, event):
         items.selection_set(iid)
         selectedItem = items.item(iid)["values"][0]
         print(selectedItem)
+        items.focus(iid)  # Give focus to iid
     else:
         pass
 
 
+def keybinds():
+    Messagebox.ok(
+        message="Copy - <Control + C>\nPaste - <Control + V>\nDelete - <Del>\n"
+        + "New Directory - <Control + Shift + N>\nRefresh - <F5>\n"
+        + "Select up - <Arrow key up>\nSelect down - <Arrow key down>",
+        title="About",
+    )
+
+
 def about_popup():  # popup window
     Messagebox.ok(
-        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.3.0",
+        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.3.1",
         title="About",
     )
 
@@ -572,32 +583,50 @@ def new_dir_popup():
             pass
 
 
+def wrap_new_dir(event):
+    new_dir_popup()
+
+
 def copy(items):
     global src
     if items.focus() != "":  # if there is a focused item
         src = os.getcwd() + "/" + selectedItem
 
 
+def wrap_copy(items, event):  # wrapper for ctrl+c keybinds
+    copy(items)
+
+
+def wrap_paste(event):  # wrapper for ctrl+v keybinds
+    paste()
+
+
 def paste():
     global src
     dest = os.getcwd() + "/"
     if not os.path.isdir(src) and src != "":
-        t1 = threading.Thread(
-            target=shutil.copy2, args=(src, dest)
-        )  # use threads so gui does not hang on large file copy
-        t2 = threading.Thread(target=paste_popup, args=([t1]))
-        t1.start()
-        t2.start()
+        try:
+            t1 = threading.Thread(
+                target=shutil.copy2, args=(src, dest)
+            )  # use threads so gui does not hang on large file copy
+            t2 = threading.Thread(target=paste_popup, args=([t1]))
+            t1.start()
+            t2.start()
+        except:
+            pass
     elif os.path.isdir(src) and src != "":
-        new_dest_dir = os.path.join(dest, os.path.basename(src))
-        os.makedirs(new_dest_dir)
-        t1 = threading.Thread(  # use threads so gui does not hang on large directory copy
-            target=shutil.copytree,
-            args=(src, new_dest_dir, False, None, shutil.copy2, False, True),
-        )
-        t2 = threading.Thread(target=paste_popup, args=([t1]))
-        t1.start()
-        t2.start()
+        try:
+            new_dest_dir = os.path.join(dest, os.path.basename(src))
+            os.makedirs(new_dest_dir)
+            t1 = threading.Thread(  # use threads so gui does not hang on large directory copy
+                target=shutil.copytree,
+                args=(src, new_dest_dir, False, None, shutil.copy2, False, True),
+            )
+            t2 = threading.Thread(target=paste_popup, args=([t1]))
+            t1.start()
+            t2.start()
+        except:
+            pass
 
 
 def paste_popup(t1):
@@ -628,6 +657,10 @@ def del_file_popup(items):
         Messagebox.show_info(
             message="There is no selected file or directory.", title="Info"
         )
+
+
+def wrap_del(items, event):  # wrapper for delete keybind
+    del_file_popup(items)
 
 
 def del_file():
