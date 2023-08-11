@@ -13,6 +13,10 @@ A simple file explorer made in Python and Tkinter.
 - Search for files in current directory
 - Themes using [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
+Icons provided by:  
+[icons8.com](https://icons8.com/)  
+[veryicon.com](https://www.veryicon.com/)
+
 ## Requirements
 
 - Python 3.8+
