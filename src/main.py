@@ -8,7 +8,7 @@ from sys import platform
 import shutil
 import threading
 
-# from PIL import Image, ImageTk
+from PIL import Image, ImageTk
 
 import ttkbootstrap as ttk
 from ttkbootstrap.tooltip import ToolTip
@@ -33,18 +33,8 @@ file_path = ""  # path of main.py
 lastDirectory = ""
 selectedItem = ""  # focused item on Treeview
 src = ""  # temp path for copying
-
-if platform == "win32":
-    available_drives = [
-        chr(x) + ":" for x in range(65, 91) if os.path.exists(chr(x) + ":")
-    ]  # 65-91 -> search for drives A-Z
-    currDrive = available_drives[0]  # current selected drive
-elif platform == "linux":
-    available_drives = "/"
-    currDrive = available_drives
-
-# current theme
-theme = ""
+theme = ""  # current theme
+photo_ref = []  # keeps references of photos
 # available themes
 # Dark
 solarD = "solar"
@@ -57,6 +47,15 @@ literaL = "litera"
 mintyL = "minty"
 morphL = "morph"
 yetiL = "yeti"
+
+if platform == "win32":
+    available_drives = [
+        chr(x) + ":" for x in range(65, 91) if os.path.exists(chr(x) + ":")
+    ]  # 65-91 -> search for drives A-Z
+    currDrive = available_drives[0]  # current selected drive
+elif platform == "linux":
+    available_drives = "/"
+    currDrive = available_drives
 
 
 def createWindow():
@@ -165,8 +164,9 @@ def next(cwdLabel, items, folderIcon, fileIcon, footer):
 
 
 # open file
-def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
-    iid = items.identify_row(event.y)
+def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event=None):
+    iid = items.focus()
+    # iid = items.identify_row(event.y) # old
     if iid == "":  # if double click on blank, don't do anything
         return
     for item in items.selection():
@@ -184,7 +184,6 @@ def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event):
     except:
         newPath = newPath.replace(tempName, "")
         os.chdir("../")
-        pass
 
 
 def onRightClick(m, items, event):
@@ -266,24 +265,87 @@ def create_widgets(window):
     ToolTip(backButton, text="Back", bootstyle=("default", "inverse"))
     ToolTip(forwardButton, text="Forward", bootstyle=("default", "inverse"))
     ToolTip(refreshButton, text="Refresh", bootstyle=("default", "inverse"))
-    # keep references for buttons
-    backButton.img_reference = backArrowIcon
-    forwardButton.img_reference = frontArrowIcon
-    refreshButton.img_reference = refreshIcon
+
+    # keep references for button images
+    photo_ref.append(backArrowIcon)
+    photo_ref.append(frontArrowIcon)
+    photo_ref.append(refreshIcon)
     # --Header Frame
+
+    # imgs
+    open_img = Image.open(file_path + "icon.png")
+    open_photo = ImageTk.PhotoImage(open_img)
+
+    refresh_img = Image.open(file_path + "Very-Basic-Reload-icon.png")
+    refresh_photo = ImageTk.PhotoImage(refresh_img)
+
+    drive_img = Image.open(file_path + "drive.png")
+    drive_photo = ImageTk.PhotoImage(drive_img)
+
+    info_img = Image.open(file_path + "info.png")
+    info_photo = ImageTk.PhotoImage(info_img)
+
+    pie_img = Image.open(file_path + "pie.png")
+    pie_photo = ImageTk.PhotoImage(pie_img)
+
+    file_img = Image.open(file_path + "File-icon.png")
+    file_photo = ImageTk.PhotoImage(file_img)
+
+    dir_img = Image.open(file_path + "Folder-icon.png")
+    dir_photo = ImageTk.PhotoImage(dir_img)
+
+    themes_img = Image.open(file_path + "themes.png")
+    themes_photo = ImageTk.PhotoImage(themes_img)
+
+    scale_img = Image.open(file_path + "resize.png")
+    scale_photo = ImageTk.PhotoImage(scale_img)
+
+    copy_img = Image.open(file_path + "copy.png")
+    copy_photo = ImageTk.PhotoImage(copy_img)
+
+    paste_img = Image.open(file_path + "paste.png")
+    paste_photo = ImageTk.PhotoImage(paste_img)
+
+    delete_img = Image.open(file_path + "delete.png")
+    delete_photo = ImageTk.PhotoImage(delete_img)
 
     # Right click menu
     m = ttk.Menu(window, tearoff=False, font=("TkDefaultFont", 10))
-    m.add_command(label="New file", command=new_file_popup)
-    m.add_command(label="New directory", command=new_dir_popup)
+    m.add_command(
+        label="Open",
+        image=open_photo,
+        compound="left",
+        command=partial(onDoubleClick, cwdLabel, items, folderIcon, fileIcon, footer),
+    )
     m.add_separator()
-    m.add_command(label="Copy Selected", command=partial(copy, items))
-    m.add_command(label="Paste Selected", command=paste)
+    m.add_command(
+        label="New file", image=file_photo, compound="left", command=new_file_popup
+    )
+    m.add_command(
+        label="New directory", image=dir_photo, compound="left", command=new_dir_popup
+    )
+    m.add_separator()
+    m.add_command(
+        label="Copy Selected",
+        image=copy_photo,
+        compound="left",
+        command=partial(copy, items),
+    )
+    m.add_command(
+        label="Paste Selected", image=paste_photo, compound="left", command=paste
+    )
+    m.add_command(
+        label="Delete selected",
+        image=delete_photo,
+        compound="left",
+        command=partial(del_file_popup, items),
+    )
     m.add_command(label="Rename selected", command=partial(rename_popup, items))
-    m.add_command(label="Delete selected", command=partial(del_file_popup, items))
     m.add_separator()
     m.add_command(
         label="Refresh",
+        image=refresh_photo,
+        compound="left",
         command=partial(refresh, cwdLabel, items, folderIcon, fileIcon, footer, []),
     )
     # --Right click menu
@@ -315,26 +377,39 @@ def create_widgets(window):
     bar = ttk.Menu(window, font=("TkDefaultFont", 10))
     window.config(menu=bar)
 
-    # image = Image.open(file_path + "icon.png")
-    # photo = ImageTk.PhotoImage(image)
-
     file_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
-    # ile_menu.img_reference = photo  # keep img reference
+    file_menu.add_command(
+        label="Open",
+        image=open_photo,
+        compound="left",
+        command=partial(onDoubleClick, cwdLabel, items, folderIcon, fileIcon, footer),
+    )
     file_menu.add_command(
         label="New file",
-        # image=photo,
-        # compound="left",
+        image=file_photo,
+        compound="left",
         command=new_file_popup,
     )
-    file_menu.add_command(label="New directory", command=new_dir_popup)
-    file_menu.add_separator()
-    file_menu.add_command(label="Copy Selected", command=partial(copy, items))
-    file_menu.add_command(label="Paste Selected", command=paste)
-    file_menu.add_command(label="Rename selected", command=partial(rename_popup, items))
     file_menu.add_command(
-        label="Delete selected", command=partial(del_file_popup, items)
+        label="New directory", image=dir_photo, compound="left", command=new_dir_popup
     )
-    # file_menu.add_command(label="Create directory", command=new_dir)
+    file_menu.add_separator()
+    file_menu.add_command(
+        label="Copy Selected",
+        image=copy_photo,
+        compound="left",
+        command=partial(copy, items),
+    )
+    file_menu.add_command(
+        label="Paste Selected", image=paste_photo, compound="left", command=paste
+    )
+    file_menu.add_command(
+        label="Delete selected",
+        image=delete_photo,
+        compound="left",
+        command=partial(del_file_popup, items),
+    )
+    file_menu.add_command(label="Rename selected", command=partial(rename_popup, items))
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=window.destroy)
 
@@ -342,6 +417,8 @@ def create_widgets(window):
     for drive in available_drives:
         drives_menu.add_command(
             label=drive,
+            image=drive_photo,
+            compound="left",
             command=partial(
                 cd_drive, drive, cwdLabel, items, folderIcon, fileIcon, footer, []
             ),
@@ -349,7 +426,10 @@ def create_widgets(window):
 
     stats_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     stats_menu.add_command(
-        label="Drive Capacities", command=partial(drive_stats, window)
+        label="Drive Capacities",
+        image=pie_photo,
+        compound="left",
+        command=partial(drive_stats, window),
     )
 
     sub_themes = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
@@ -374,16 +454,21 @@ def create_widgets(window):
     sub_scale.add_command(label="50%", command=partial(change_scale, 0.5, s))
 
     preferences_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
-    preferences_menu.add_cascade(label="Themes", menu=sub_themes)
-    preferences_menu.add_cascade(label="Scale", menu=sub_scale)
+    preferences_menu.add_cascade(
+        label="Themes", image=themes_photo, compound="left", menu=sub_themes
+    )
+    preferences_menu.add_cascade(
+        label="Scale", image=scale_photo, compound="left", menu=sub_scale
+    )
 
     help_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
-    help_menu.add_command(label="Keybinds", command=keybinds)
+    help_menu.add_command(
+        label="Keybinds", image=info_photo, compound="left", command=keybinds
+    )
 
     about_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
     about_menu.add_command(
-        label="About the app",
-        command=about_popup,
+        label="About the app", command=about_popup, image=info_photo, compound="left"
     )
 
     bar.add_cascade(label="File", menu=file_menu, underline=0)
@@ -411,6 +496,20 @@ def create_widgets(window):
         "<Return>",
         partial(search, searchEntry, cwdLabel, items, folderIcon, fileIcon, footer),
     )  # on enter press, run search1
+
+    # img references
+    photo_ref.append(open_photo)
+    photo_ref.append(refresh_photo)
+    photo_ref.append(drive_photo)
+    photo_ref.append(info_photo)
+    photo_ref.append(pie_photo)
+    photo_ref.append(file_photo)
+    photo_ref.append(dir_photo)
+    photo_ref.append(themes_photo)
+    photo_ref.append(scale_photo)
+    photo_ref.append(copy_photo)
+    photo_ref.append(paste_photo)
+    photo_ref.append(delete_photo)
 
     # wrappers for keybinds
     window.bind(
@@ -475,6 +574,7 @@ def drive_stats(window):
     top.geometry(str(len(meters) * 200) + "x200")  # Add 200px width for every drive
     for meter in meters:
         meter.pack(side=tk.LEFT, expand=True, fill=tk.X)
+    top.protocol("WM_DELETE_WINDOW", top.destroy)  # destroy popup on close window event
 
 
 def cd_drive(drive, cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
@@ -559,7 +659,7 @@ def keybinds():
 
 def about_popup():  # popup window
     Messagebox.ok(
-        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.3.1",
+        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.3.2",
         title="About",
     )
 
