@@ -1,5 +1,13 @@
 # Change Log
 
+## Version 0.4.0
+
+- Added column sorting
+- Added the ability to change font size
+- Searching for an item (file, directory) that does not exist now empties the item list
+- Update column headers (bold, larger font)
+- code improvements and refactoring
+
 ## Version 0.3.2
 
 - Added Open function on right click menu
