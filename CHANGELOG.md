@@ -1,5 +1,14 @@
 # Change Log
 
+## Version 0.5.0
+
+- Added System menu (old Stats menu)
+- Added CPU metrics
+- Added memory metrics
+- Added Network metrics
+- Added Processes window
+- Updated icons
+
 ## Version 0.4.0
 
 - Added column sorting
