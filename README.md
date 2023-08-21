@@ -12,6 +12,7 @@ A simple file explorer made in Python and Tkinter.
 - Create, Delete and Rename files and directories
 - Sorting by name, date modified, type and size (by clicking on the appropriate column)
 - Search for files and directories in current directory
+- Check System metrics (Drives, CPU, Memory, Network, Processes) using the System menu
 - Keybinds (see Help menu)
 - Themes using [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
@@ -23,11 +24,13 @@ Icons provided by:
 
 - Python 3.8+
 - ttkbootsrap (version tested 1.10.1)
+- psutil (version tested 5.9.5)
 
 ## How to run
 
 1. ```pip install ttkbootstrap```
-2. Execute ```py main.py```
+2. ```pip install psutil```
+3. Execute ```py main.py```
 
 *Tested on Windows 11.*
 
@@ -35,7 +38,6 @@ Icons provided by:
 
 - Will attempt Linux compatability
 - Auto refresh on action (new file, new directory, rename, etc.)
-- Add more icons
 - Add move file function
 - Add editable path
 - Break into modules
