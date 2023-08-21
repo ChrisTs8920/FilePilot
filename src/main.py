@@ -24,7 +24,6 @@ import ext
 # Improve Copy - Paste,
 # break into modules,
 # editable path,
-# column sorting,
 # code improvements, refactoring
 
 # globals
@@ -35,6 +34,10 @@ selectedItem = ""  # focused item on Treeview
 src = ""  # temp path for copying
 theme = ""  # current theme
 photo_ref = []  # keeps references of photos
+currDrive = ""
+available_drives = []
+font_size = "10"  # default is 10
+
 # available themes
 # Dark
 solarD = "solar"
@@ -43,19 +46,22 @@ Darkly = "darkly"
 CyborgD = "cyborg"
 VaporD = "vapor"
 # Light
-literaL = "litera"
+literaL = "litera"  # default theme
 mintyL = "minty"
 morphL = "morph"
 yetiL = "yeti"
 
-if platform == "win32":
-    available_drives = [
-        chr(x) + ":" for x in range(65, 91) if os.path.exists(chr(x) + ":")
-    ]  # 65-91 -> search for drives A-Z
-    currDrive = available_drives[0]  # current selected drive
-elif platform == "linux":
-    available_drives = "/"
-    currDrive = available_drives
+
+def checkPlatform():
+    global currDrive, available_drives
+    if platform == "win32":
+        available_drives = [
+            chr(x) + ":" for x in range(65, 91) if os.path.exists(chr(x) + ":")
+        ]  # 65-91 -> search for drives A-Z
+        currDrive = available_drives[0]  # current selected drive
+    elif platform == "linux":
+        available_drives = "/"
+        currDrive = available_drives
 
 
 def createWindow():
@@ -200,6 +206,8 @@ def search(searchEntry, cwdLabel, items, folderIcon, fileIcon, footer, event):
     for name in fileNames:
         if name.lower().find(query) != -1:  # if query in name
             queryNames.append(name)
+        else:
+            queryNames.append("")
     refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames)
 
 
@@ -236,9 +244,9 @@ def create_widgets(window):
         headerFrame,
         text=" " + os.getcwd(),
         relief="flat",
-        width=110,
+        # width=110,
     )
-    searchEntry = ttk.Entry(headerFrame, width=30)
+    searchEntry = ttk.Entry(headerFrame, width=30, font=("TkDefaultFont", font_size))
     searchEntry.insert(0, "Search files..")
     searchEntry.bind("<Button-1>", partial(click, searchEntry))
     searchEntry.bind("<FocusOut>", partial(FocusOut, searchEntry, window))
@@ -297,9 +305,6 @@ def create_widgets(window):
     themes_img = Image.open(file_path + "themes.png")
     themes_photo = ImageTk.PhotoImage(themes_img)
 
-    scale_img = Image.open(file_path + "resize.png")
-    scale_photo = ImageTk.PhotoImage(scale_img)
-
     copy_img = Image.open(file_path + "copy.png")
     copy_photo = ImageTk.PhotoImage(copy_img)
 
@@ -310,7 +315,7 @@ def create_widgets(window):
     delete_photo = ImageTk.PhotoImage(delete_img)
 
     # Right click menu
-    m = ttk.Menu(window, tearoff=False, font=("TkDefaultFont", 10))
+    m = ttk.Menu(window, tearoff=False, font=("TkDefaultFont", font_size))
     m.add_command(
         label="Open",
         image=open_photo,
@@ -350,8 +355,11 @@ def create_widgets(window):
     )
     # --Right click menu
 
-    s.configure(".", font=("TkDefaultFont", 10))  # set font size
+    s.configure(".", font=("TkDefaultFont", font_size))  # set font size
     s.configure("Treeview", rowheight=28)  # customize treeview
+    s.configure(
+        "Treeview.Heading", font=("TkDefaultFont", str(int(font_size) + 1), "bold")
+    )
     s.layout("Treeview", [("Treeview.treearea", {"sticky": "nswe"})])  # remove borders
 
     items.column("#0", width=40, stretch=tk.NO)
@@ -359,10 +367,30 @@ def create_widgets(window):
     items.column("Date modified", anchor=tk.CENTER, width=200, minwidth=120)
     items.column("Size", anchor=tk.CENTER, width=80, minwidth=60)
     items.column("Type", anchor=tk.CENTER, width=120, minwidth=60)
-    items.heading("Name", text="Name", anchor=tk.CENTER)
-    items.heading("Date modified", text="Date modified", anchor=tk.CENTER)
-    items.heading("Type", text="Type", anchor=tk.CENTER)
-    items.heading("Size", text="Size", anchor=tk.CENTER)
+    items.heading(
+        "Name",
+        text="Name",
+        anchor=tk.CENTER,
+        command=partial(sort_col, items, "Name", False),
+    )
+    items.heading(
+        "Date modified",
+        text="Date modified",
+        anchor=tk.CENTER,
+        command=partial(sort_col, items, "Date modified", False),
+    )
+    items.heading(
+        "Type",
+        text="Type",
+        anchor=tk.CENTER,
+        command=partial(sort_col, items, "Type", False),
+    )
+    items.heading(
+        "Size",
+        text="Size",
+        anchor=tk.CENTER,
+        command=partial(sort_col, items, "Size", False),
+    )
     items.bind(
         "<Double-1>",
         partial(onDoubleClick, cwdLabel, items, folderIcon, fileIcon, footer),
@@ -374,10 +402,10 @@ def create_widgets(window):
     # --Browse Frame
 
     # Menu bar
-    bar = ttk.Menu(window, font=("TkDefaultFont", 10))
+    bar = ttk.Menu(window, font=("TkDefaultFont", font_size))
     window.config(menu=bar)
 
-    file_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    file_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
     file_menu.add_command(
         label="Open",
         image=open_photo,
@@ -413,7 +441,7 @@ def create_widgets(window):
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=window.destroy)
 
-    drives_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    drives_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
     for drive in available_drives:
         drives_menu.add_command(
             label=drive,
@@ -424,7 +452,7 @@ def create_widgets(window):
             ),
         )
 
-    stats_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    stats_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
     stats_menu.add_command(
         label="Drive Capacities",
         image=pie_photo,
@@ -432,7 +460,7 @@ def create_widgets(window):
         command=partial(drive_stats, window),
     )
 
-    sub_themes = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    sub_themes = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
     sub_themes.add_command(label="Darkly", command=partial(write_theme, Darkly))
     sub_themes.add_command(label="Solar Dark", command=partial(write_theme, solarD))
     sub_themes.add_command(
@@ -446,27 +474,37 @@ def create_widgets(window):
     sub_themes.add_command(label="Morph Light", command=partial(write_theme, morphL))
     sub_themes.add_command(label="Yeti Light", command=partial(write_theme, yetiL))
 
-    sub_scale = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    sub_font_size = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
+    sub_font_size.add_command(label="14", command=partial(change_font_popup, 14))
+    sub_font_size.add_command(label="12", command=partial(change_font_popup, 12))
+    sub_font_size.add_command(label="11", command=partial(change_font_popup, 11))
+    sub_font_size.add_command(
+        label="10 - default", command=partial(change_font_popup, 10)
+    )
+    sub_font_size.add_command(label="9", command=partial(change_font_popup, 9))
+    sub_font_size.add_command(label="8", command=partial(change_font_popup, 8))
+    sub_font_size.add_command(label="7", command=partial(change_font_popup, 7))
+
+    sub_scale = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
     sub_scale.add_command(label="150%", command=partial(change_scale, 1.5, s))
     sub_scale.add_command(label="125%", command=partial(change_scale, 1.25, s))
     sub_scale.add_command(label="100%", command=partial(change_scale, 1.0, s))
     sub_scale.add_command(label="75%", command=partial(change_scale, 0.75, s))
     sub_scale.add_command(label="50%", command=partial(change_scale, 0.5, s))
 
-    preferences_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    preferences_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
     preferences_menu.add_cascade(
         label="Themes", image=themes_photo, compound="left", menu=sub_themes
     )
-    preferences_menu.add_cascade(
-        label="Scale", image=scale_photo, compound="left", menu=sub_scale
-    )
+    preferences_menu.add_cascade(label="Scale", menu=sub_scale)
+    preferences_menu.add_cascade(label="Font size", menu=sub_font_size)
 
-    help_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    help_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
     help_menu.add_command(
         label="Keybinds", image=info_photo, compound="left", command=keybinds
     )
 
-    about_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", 10))
+    about_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
     about_menu.add_command(
         label="About the app", command=about_popup, image=info_photo, compound="left"
     )
@@ -506,7 +544,6 @@ def create_widgets(window):
     photo_ref.append(file_photo)
     photo_ref.append(dir_photo)
     photo_ref.append(themes_photo)
-    photo_ref.append(scale_photo)
     photo_ref.append(copy_photo)
     photo_ref.append(paste_photo)
     photo_ref.append(delete_photo)
@@ -523,6 +560,35 @@ def create_widgets(window):
     return cwdLabel, items, folderIcon, fileIcon, footer
 
 
+def sort_col(items, col, reverse):
+    l = [(items.set(k, col), k) for k in items.get_children("")]
+    if col == "Name" or col == "Type":
+        l.sort(reverse=reverse)
+    elif col == "Date modified":
+        l = sorted(l, key=sort_key_dates, reverse=reverse)
+    elif col == "Size":
+        l = sorted(l, key=sort_key_size, reverse=reverse)
+
+    # rearrange items in sorted positions
+    for index, (val, k) in enumerate(l):
+        items.move(k, "", index)
+
+    # reverse sort next time
+    items.heading(col, command=partial(sort_col, items, col, not reverse))
+
+
+def sort_key_dates(item):
+    return datetime.strptime(item[0], "%d-%m-%Y %I:%M")
+
+
+def sort_key_size(item):
+    num_size = item[0].split(" ")[0]
+    if num_size != "":
+        return int(num_size)
+    else:
+        return -1  # if it's a directory, give it negative size value, for sorting
+
+
 def write_theme(theme):
     with open(file_path + "../res/theme.txt", "w") as f:  # closes file automatically
         f.write(theme)
@@ -531,8 +597,18 @@ def write_theme(theme):
 
 def warning_popup():
     Messagebox.show_info(
-        message="Please restart the application to apply changes", title="Info"
+        message="Please restart the application to apply changes.", title="Info"
     )
+
+
+def change_font_popup(size):
+    warning_popup()
+    change_font_size(size)
+
+
+def change_font_size(size):
+    with open(file_path + "../res/font.txt", "w") as f:  # closes file automatically
+        f.write(str(size))
 
 
 def change_scale(multiplier, s):
@@ -659,7 +735,7 @@ def keybinds():
 
 def about_popup():  # popup window
     Messagebox.ok(
-        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.3.2",
+        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.4.0",
         title="About",
     )
 
@@ -771,14 +847,28 @@ def del_file():
         shutil.rmtree(os.getcwd() + "/" + selectedItem)
 
 
-def main():
+def read_theme():
     global theme, file_path
-    file_path = os.path.join(os.path.dirname(__file__), "../icons/")
     with open(file_path + "../res/theme.txt") as f:  # closes file automatically
         theme = f.readline()
     if theme == "":  # if theme.txt is empty, set default theme
-        theme = Darkly
-    # Main window
+        theme = literaL
+
+
+def read_font():
+    global font_size
+    with open(file_path + "../res/font.txt") as f:  # closes file automatically
+        font_size = f.readline()
+    if font_size == "":  # if font.txt is empty, set default font
+        font_size = 10
+
+
+def main():
+    global file_path
+    file_path = os.path.join(os.path.dirname(__file__), "../icons/")
+    checkPlatform()
+    read_theme()
+    read_font()
     root = createWindow()
 
     cwdLabel, items, folderIcon, fileIcon, footer = create_widgets(root)
