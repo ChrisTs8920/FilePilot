@@ -14,14 +14,14 @@ import ttkbootstrap as ttk
 from ttkbootstrap.tooltip import ToolTip
 from ttkbootstrap.dialogs.dialogs import Messagebox
 from ttkbootstrap.dialogs.dialogs import Querybox
+import psutil
 
 import ext
 
 # TODO:
 # Linux compatibility,
 # Auto refresh on action (new file, new directory, rename, etc.)
-# grab file icons from files (Or pillow library),
-# Improve Copy - Paste,
+# Add move file function,
 # break into modules,
 # editable path,
 # code improvements, refactoring
@@ -287,6 +287,9 @@ def create_widgets(window):
     refresh_img = Image.open(file_path + "Very-Basic-Reload-icon.png")
     refresh_photo = ImageTk.PhotoImage(refresh_img)
 
+    rename_img = Image.open(file_path + "rename.png")
+    rename_photo = ImageTk.PhotoImage(rename_img)
+
     drive_img = Image.open(file_path + "drive.png")
     drive_photo = ImageTk.PhotoImage(drive_img)
 
@@ -296,6 +299,18 @@ def create_widgets(window):
     pie_img = Image.open(file_path + "pie.png")
     pie_photo = ImageTk.PhotoImage(pie_img)
 
+    cpu_img = Image.open(file_path + "cpu.png")
+    cpu_photo = ImageTk.PhotoImage(cpu_img)
+
+    memory_img = Image.open(file_path + "memory.png")
+    memory_photo = ImageTk.PhotoImage(memory_img)
+
+    network_img = Image.open(file_path + "network.png")
+    network_photo = ImageTk.PhotoImage(network_img)
+
+    process_img = Image.open(file_path + "process.png")
+    process_photo = ImageTk.PhotoImage(process_img)
+
     file_img = Image.open(file_path + "File-icon.png")
     file_photo = ImageTk.PhotoImage(file_img)
 
@@ -304,6 +319,12 @@ def create_widgets(window):
 
     themes_img = Image.open(file_path + "themes.png")
     themes_photo = ImageTk.PhotoImage(themes_img)
+
+    scale_img = Image.open(file_path + "scale.png")
+    scale_photo = ImageTk.PhotoImage(scale_img)
+
+    font_img = Image.open(file_path + "font.png")
+    font_photo = ImageTk.PhotoImage(font_img)
 
     copy_img = Image.open(file_path + "copy.png")
     copy_photo = ImageTk.PhotoImage(copy_img)
@@ -345,7 +366,12 @@ def create_widgets(window):
         compound="left",
         command=partial(del_file_popup, items),
     )
-    m.add_command(label="Rename selected", command=partial(rename_popup, items))
+    m.add_command(
+        label="Rename selected",
+        image=rename_photo,
+        compound="left",
+        command=partial(rename_popup, items),
+    )
     m.add_separator()
     m.add_command(
         label="Refresh",
@@ -437,7 +463,12 @@ def create_widgets(window):
         compound="left",
         command=partial(del_file_popup, items),
     )
-    file_menu.add_command(label="Rename selected", command=partial(rename_popup, items))
+    file_menu.add_command(
+        label="Rename selected",
+        image=rename_photo,
+        compound="left",
+        command=partial(rename_popup, items),
+    )
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=window.destroy)
 
@@ -452,12 +483,27 @@ def create_widgets(window):
             ),
         )
 
-    stats_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
-    stats_menu.add_command(
-        label="Drive Capacities",
+    system_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
+    system_menu.add_command(
+        label="Drives",
         image=pie_photo,
         compound="left",
         command=partial(drive_stats, window),
+    )
+    system_menu.add_command(
+        label="CPU", image=cpu_photo, compound="left", command=cpu_stats
+    )
+    system_menu.add_command(
+        label="Memory", image=memory_photo, compound="left", command=memory_stats
+    )
+    system_menu.add_command(
+        label="Network", image=network_photo, compound="left", command=network_stats
+    )
+    system_menu.add_command(
+        label="Processes",
+        image=process_photo,
+        compound="left",
+        command=partial(processes_win, window),
     )
 
     sub_themes = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
@@ -496,8 +542,12 @@ def create_widgets(window):
     preferences_menu.add_cascade(
         label="Themes", image=themes_photo, compound="left", menu=sub_themes
     )
-    preferences_menu.add_cascade(label="Scale", menu=sub_scale)
-    preferences_menu.add_cascade(label="Font size", menu=sub_font_size)
+    preferences_menu.add_cascade(
+        label="Scale", image=scale_photo, compound="left", menu=sub_scale
+    )
+    preferences_menu.add_cascade(
+        label="Font size", image=font_photo, compound="left", menu=sub_font_size
+    )
 
     help_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
     help_menu.add_command(
@@ -511,7 +561,7 @@ def create_widgets(window):
 
     bar.add_cascade(label="File", menu=file_menu, underline=0)
     bar.add_cascade(label="Select drive", menu=drives_menu, underline=0)
-    bar.add_cascade(label="Stats", menu=stats_menu, underline=0)
+    bar.add_cascade(label="System", menu=system_menu, underline=0)
     bar.add_cascade(label="Preferences", menu=preferences_menu, underline=0)
     bar.add_cascade(label="Help", menu=help_menu, underline=0)
     bar.add_cascade(label="About", menu=about_menu, underline=0)
@@ -538,12 +588,19 @@ def create_widgets(window):
     # img references
     photo_ref.append(open_photo)
     photo_ref.append(refresh_photo)
+    photo_ref.append(rename_photo)
     photo_ref.append(drive_photo)
     photo_ref.append(info_photo)
     photo_ref.append(pie_photo)
+    photo_ref.append(cpu_photo)
+    photo_ref.append(memory_photo)
+    photo_ref.append(network_photo)
+    photo_ref.append(process_photo)
     photo_ref.append(file_photo)
     photo_ref.append(dir_photo)
     photo_ref.append(themes_photo)
+    photo_ref.append(scale_photo)
+    photo_ref.append(font_photo)
     photo_ref.append(copy_photo)
     photo_ref.append(paste_photo)
     photo_ref.append(delete_photo)
@@ -617,14 +674,13 @@ def change_scale(multiplier, s):
 
 
 def drive_stats(window):
-    top = tk.Toplevel(window)
+    top = ttk.Toplevel(window)
     top.resizable(False, False)
     top.iconphoto(False, tk.PhotoImage(file=file_path + "info.png"))
     top.title("Drives")
 
     meters = []
     for drive in available_drives:
-        shutil.disk_usage(drive)
         meters.append(
             ttk.Meter(
                 top,
@@ -635,22 +691,112 @@ def drive_stats(window):
                 subtext="GB Used",
                 textright="/ "
                 + str(
-                    round(shutil.disk_usage(drive).total / 1 * 10**-9)
+                    round(psutil.disk_usage(drive).total / (1024 * 1024 * 1024))
                 ),  # converts bytes to GB
                 textleft=drive,
                 interactive=False,
                 amounttotal=round(
-                    shutil.disk_usage(drive).total / 1 * 10**-9
+                    psutil.disk_usage(drive).total / (1024 * 1024 * 1024)
                 ),  # converts bytes to GB
                 amountused=round(
-                    shutil.disk_usage(drive).used / 1 * 10**-9
+                    psutil.disk_usage(drive).used / (1024 * 1024 * 1024)
                 ),  # converts bytes to GB
             )
         )
     top.geometry(str(len(meters) * 200) + "x200")  # Add 200px width for every drive
     for meter in meters:
         meter.pack(side=tk.LEFT, expand=True, fill=tk.X)
-    top.protocol("WM_DELETE_WINDOW", top.destroy)  # destroy popup on close window event
+
+
+def cpu_stats():
+    cpu_count_log = psutil.cpu_count()
+    cpu_count = psutil.cpu_count(logical=False)
+    cpu_per = psutil.cpu_percent()
+    cpu_freq = round(psutil.cpu_freq().current / 1000, 2)
+    Messagebox.ok(
+        message="Usage: "
+        + str(cpu_per)
+        + "%"
+        + "\nLogical Processors: "
+        + str(cpu_count)
+        + "\nCores: "
+        + str(cpu_count_log)
+        + "\nFrequency: "
+        + str(cpu_freq)
+        + " GHz",
+        title="CPU",
+    )
+
+
+def memory_stats():
+    memory_per = psutil.virtual_memory().percent
+    memory_total = round(psutil.virtual_memory().total / (1024 * 1024 * 1024), 2)
+    memory_used = round(psutil.virtual_memory().used / (1024 * 1024 * 1024), 2)
+    memory_avail = round(psutil.virtual_memory().available / (1024 * 1024 * 1024), 2)
+    Messagebox.ok(
+        message="Usage: "
+        + str(memory_per)
+        + "%"
+        + "\nTotal: "
+        + str(memory_total)
+        + " GB"
+        + "\nUsed: "
+        + str(memory_used)
+        + " GB"
+        + "\nAvailable: "
+        + str(memory_avail)
+        + " GB",
+        title="Memory",
+    )
+
+
+def network_stats():
+    net = psutil.net_io_counters(pernic=True)
+    mes = ""
+    for key, value in net.items():
+        mes += (
+            str(key)
+            + ":\n"
+            + "Sent: "
+            + str(round(value.bytes_sent / (1024 * 1024 * 1024), 2))
+            + " GB\n"
+            + "Received: "
+            + str(round(value.bytes_recv / (1024 * 1024 * 1024), 2))
+            + " GB\n\n"
+        )
+    Messagebox.ok(message=mes, title="Network")
+
+
+def processes_win(window):
+    top = ttk.Toplevel(window)
+    top.geometry("1024x600")
+    top.resizable(True, True)
+    top.iconphoto(False, tk.PhotoImage(file=file_path + "process.png"))
+    top.title("Processes")
+    scroll = ttk.Scrollbar(top, orient="vertical")
+
+    processes_list = []
+    for i in psutil.pids():
+        p = psutil.Process(i)
+        processes_list.append(
+            (p.name(), p.pid, p.status(), str(round(p.memory_info().rss / 1024)) + "KB")
+        )
+
+    processes = ttk.Treeview(
+        top,
+        columns=("Name", "PID", "Status", "Memory"),
+        yscrollcommand=scroll.set,
+        style="Custom.Treeview",
+    )
+    for p in processes_list:
+        processes.insert(parent="", index=0, values=p)
+    processes.heading("Name", text="Name", anchor="w")
+    processes.heading("PID", text="PID", anchor="w")
+    processes.heading("Status", text="Status", anchor="w")
+    processes.heading("Memory", text="Memory", anchor="w")
+    scroll.config(command=processes.yview)
+    scroll.pack(side=tk.RIGHT, fill=tk.BOTH)
+    processes.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
 
 def cd_drive(drive, cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
@@ -729,13 +875,13 @@ def keybinds():
         message="Copy - <Control + C>\nPaste - <Control + V>\nDelete - <Del>\n"
         + "New Directory - <Control + Shift + N>\nRefresh - <F5>\n"
         + "Select up - <Arrow key up>\nSelect down - <Arrow key down>",
-        title="About",
+        title="Info",
     )
 
 
 def about_popup():  # popup window
     Messagebox.ok(
-        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.4.0",
+        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.5.0",
         title="About",
     )
 
