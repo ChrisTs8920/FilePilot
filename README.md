@@ -10,7 +10,9 @@ A simple file explorer made in Python and Tkinter.
 - View, Open files and directories
 - Copy and Paste files and directories
 - Create, Delete and Rename files and directories
-- Search for files in current directory
+- Sorting by name, date modified, type and size (by clicking on the appropriate column)
+- Search for files and directories in current directory
+- Keybinds (see Help menu)
 - Themes using [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
 Icons provided by:  
@@ -36,7 +38,6 @@ Icons provided by:
 - Add more icons
 - Add move file function
 - Add editable path
-- Add column sorting
 - Break into modules
 - Code improvements and refactoring
 
