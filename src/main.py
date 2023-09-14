@@ -20,7 +20,6 @@ import ext
 
 # TODO:
 # Linux compatibility,
-# Auto refresh on action (new file, new directory, rename, etc.)
 # Add move file function,
 # break into modules,
 # editable path,
@@ -37,6 +36,11 @@ photo_ref = []  # keeps references of photos
 currDrive = ""
 available_drives = []
 font_size = "10"  # default is 10
+folderIcon = 0
+fileIcon = 0
+items = 0  # holds treeview items
+cwdLabel = 0
+footer = 0
 
 # available themes
 # Dark
@@ -74,8 +78,8 @@ def createWindow():
     return root
 
 
-def refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
-    global fileNames
+def refresh(queryNames):
+    global fileNames, folderIcon, fileIcon, items, cwdLabel, footer
     # Refresh Header
     cwdLabel.config(text=" " + os.getcwd())
     # --Refresh Header
@@ -148,29 +152,28 @@ def refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
     # --Refresh Footer
 
 
-def wrap_refresh(
-    cwdLabel, items, folderIcon, fileIcon, footer, event
-):  # wrapper for F5 bind
-    refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
+def wrap_refresh(event):  # wrapper for F5 bind
+    refresh([])
 
 
-def previous(cwdLabel, items, folderIcon, fileIcon, footer):
+def previous():
     global lastDirectory
     lastDirectory = os.getcwd()
     os.chdir("../")
-    refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
+    refresh([])
 
 
-def next(cwdLabel, items, folderIcon, fileIcon, footer):
+def next():
     try:
         os.chdir(lastDirectory)
-        refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
+        refresh([])
     except:
         return
 
 
 # open file
-def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event=None):
+def onDoubleClick(event=None):
+    global items
     iid = items.focus()
     # iid = items.identify_row(event.y) # old
     if iid == "":  # if double click on blank, don't do anything
@@ -186,18 +189,18 @@ def onDoubleClick(cwdLabel, items, folderIcon, fileIcon, footer, event=None):
             os.chdir(newPath)
         else:
             os.startfile(newPath)
-        refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
+        refresh([])
     except:
         newPath = newPath.replace(tempName, "")
         os.chdir("../")
 
 
-def onRightClick(m, items, event):
-    selectItem(items, event)
+def onRightClick(m, event):
+    selectItem(event)
     m.tk_popup(event.x_root, event.y_root)
 
 
-def search(searchEntry, cwdLabel, items, folderIcon, fileIcon, footer, event):
+def search(searchEntry, event):
     fileNames = os.listdir()
     query = searchEntry.get()  # get query from text box
     query = query.lower()
@@ -208,10 +211,11 @@ def search(searchEntry, cwdLabel, items, folderIcon, fileIcon, footer, event):
             queryNames.append(name)
         else:
             queryNames.append("")
-    refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames)
+    refresh(queryNames)
 
 
 def create_widgets(window):
+    global folderIcon, fileIcon, items, cwdLabel, footer
     s = ttk.Style()
     # Browse Frame
     browseFrame = ttk.Frame(window)
@@ -253,18 +257,18 @@ def create_widgets(window):
     backButton = ttk.Button(
         headerFrame,
         image=backArrowIcon,
-        command=partial(previous, cwdLabel, items, folderIcon, fileIcon, footer),
+        command=previous,
         bootstyle="light",
     )
     forwardButton = ttk.Button(
         headerFrame,
         image=frontArrowIcon,
-        command=partial(next, cwdLabel, items, folderIcon, fileIcon, footer),
+        command=next,
         bootstyle="light",
     )
     refreshButton = ttk.Button(
         headerFrame,
-        command=partial(refresh, cwdLabel, items, folderIcon, fileIcon, footer, []),
+        command=partial(refresh, []),
         image=refreshIcon,
         bootstyle="light",
     )
@@ -273,11 +277,6 @@ def create_widgets(window):
     ToolTip(backButton, text="Back", bootstyle=("default", "inverse"))
     ToolTip(forwardButton, text="Forward", bootstyle=("default", "inverse"))
     ToolTip(refreshButton, text="Refresh", bootstyle=("default", "inverse"))
-
-    # keep references for button images
-    photo_ref.append(backArrowIcon)
-    photo_ref.append(frontArrowIcon)
-    photo_ref.append(refreshIcon)
     # --Header Frame
 
     # imgs
@@ -341,7 +340,7 @@ def create_widgets(window):
         label="Open",
         image=open_photo,
         compound="left",
-        command=partial(onDoubleClick, cwdLabel, items, folderIcon, fileIcon, footer),
+        command=onDoubleClick,
     )
     m.add_separator()
     m.add_command(
@@ -355,7 +354,7 @@ def create_widgets(window):
         label="Copy Selected",
         image=copy_photo,
         compound="left",
-        command=partial(copy, items),
+        command=copy,
     )
     m.add_command(
         label="Paste Selected", image=paste_photo, compound="left", command=paste
@@ -377,7 +376,7 @@ def create_widgets(window):
         label="Refresh",
         image=refresh_photo,
         compound="left",
-        command=partial(refresh, cwdLabel, items, folderIcon, fileIcon, footer, []),
+        command=partial(refresh, []),
     )
     # --Right click menu
 
@@ -397,34 +396,34 @@ def create_widgets(window):
         "Name",
         text="Name",
         anchor=tk.CENTER,
-        command=partial(sort_col, items, "Name", False),
+        command=partial(sort_col, "Name", False),
     )
     items.heading(
         "Date modified",
         text="Date modified",
         anchor=tk.CENTER,
-        command=partial(sort_col, items, "Date modified", False),
+        command=partial(sort_col, "Date modified", False),
     )
     items.heading(
         "Type",
         text="Type",
         anchor=tk.CENTER,
-        command=partial(sort_col, items, "Type", False),
+        command=partial(sort_col, "Type", False),
     )
     items.heading(
         "Size",
         text="Size",
         anchor=tk.CENTER,
-        command=partial(sort_col, items, "Size", False),
+        command=partial(sort_col, "Size", False),
     )
     items.bind(
         "<Double-1>",
-        partial(onDoubleClick, cwdLabel, items, folderIcon, fileIcon, footer),
+        onDoubleClick,
     )  # command on double click
-    items.bind("<ButtonRelease-1>", partial(selectItem, items))
-    items.bind("<Button-3>", partial(onRightClick, m, items))  # command on right click
-    items.bind("<Up>", partial(up_key, items))  # bind up arrow key
-    items.bind("<Down>", partial(down_key, items))  # bind down arrow key
+    items.bind("<ButtonRelease-1>", selectItem)
+    items.bind("<Button-3>", partial(onRightClick, m))  # command on right click
+    items.bind("<Up>", up_key)  # bind up arrow key
+    items.bind("<Down>", down_key)  # bind down arrow key
     # --Browse Frame
 
     # Menu bar
@@ -436,7 +435,7 @@ def create_widgets(window):
         label="Open",
         image=open_photo,
         compound="left",
-        command=partial(onDoubleClick, cwdLabel, items, folderIcon, fileIcon, footer),
+        command=onDoubleClick,
     )
     file_menu.add_command(
         label="New file",
@@ -452,7 +451,7 @@ def create_widgets(window):
         label="Copy Selected",
         image=copy_photo,
         compound="left",
-        command=partial(copy, items),
+        command=copy,
     )
     file_menu.add_command(
         label="Paste Selected", image=paste_photo, compound="left", command=paste
@@ -461,13 +460,13 @@ def create_widgets(window):
         label="Delete selected",
         image=delete_photo,
         compound="left",
-        command=partial(del_file_popup, items),
+        command=del_file_popup,
     )
     file_menu.add_command(
         label="Rename selected",
         image=rename_photo,
         compound="left",
-        command=partial(rename_popup, items),
+        command=rename_popup,
     )
     file_menu.add_separator()
     file_menu.add_command(label="Exit", command=window.destroy)
@@ -478,9 +477,7 @@ def create_widgets(window):
             label=drive,
             image=drive_photo,
             compound="left",
-            command=partial(
-                cd_drive, drive, cwdLabel, items, folderIcon, fileIcon, footer, []
-            ),
+            command=partial(cd_drive, drive, []),
         )
 
     system_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", font_size))
@@ -560,7 +557,7 @@ def create_widgets(window):
     )
 
     bar.add_cascade(label="File", menu=file_menu, underline=0)
-    bar.add_cascade(label="Select drive", menu=drives_menu, underline=0)
+    bar.add_cascade(label="Drives", menu=drives_menu, underline=0)
     bar.add_cascade(label="System", menu=system_menu, underline=0)
     bar.add_cascade(label="Preferences", menu=preferences_menu, underline=0)
     bar.add_cascade(label="Help", menu=help_menu, underline=0)
@@ -582,10 +579,13 @@ def create_widgets(window):
 
     searchEntry.bind(
         "<Return>",
-        partial(search, searchEntry, cwdLabel, items, folderIcon, fileIcon, footer),
+        partial(search, searchEntry),
     )  # on enter press, run search1
 
     # img references
+    photo_ref.append(backArrowIcon)
+    photo_ref.append(frontArrowIcon)
+    photo_ref.append(refreshIcon)
     photo_ref.append(open_photo)
     photo_ref.append(refresh_photo)
     photo_ref.append(rename_photo)
@@ -606,18 +606,15 @@ def create_widgets(window):
     photo_ref.append(delete_photo)
 
     # wrappers for keybinds
-    window.bind(
-        "<F5>", partial(wrap_refresh, cwdLabel, items, folderIcon, fileIcon, footer)
-    )
-    window.bind("<Delete>", partial(wrap_del, items))
-    window.bind("<Control-c>", partial(wrap_copy, items))
+    window.bind("<F5>", wrap_refresh)
+    window.bind("<Delete>", wrap_del)
+    window.bind("<Control-c>", wrap_copy)
     window.bind("<Control-v>", wrap_paste)
     window.bind("<Control-Shift-N>", wrap_new_dir)
 
-    return cwdLabel, items, folderIcon, fileIcon, footer
 
-
-def sort_col(items, col, reverse):
+def sort_col(col, reverse):
+    global items
     l = [(items.set(k, col), k) for k in items.get_children("")]
     if col == "Name" or col == "Type":
         l.sort(reverse=reverse)
@@ -631,7 +628,7 @@ def sort_col(items, col, reverse):
         items.move(k, "", index)
 
     # reverse sort next time
-    items.heading(col, command=partial(sort_col, items, col, not reverse))
+    items.heading(col, command=partial(sort_col, col, not reverse))
 
 
 def sort_key_dates(item):
@@ -799,17 +796,17 @@ def processes_win(window):
     processes.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
 
-def cd_drive(drive, cwdLabel, items, folderIcon, fileIcon, footer, queryNames):
-    global fileNames, currDrive
+def cd_drive(drive, queryNames):
+    global fileNames, currDrive, cwdLabel
     cwdLabel.config(text=" " + drive)
     currDrive = drive
     fileNames = os.listdir(currDrive)
     os.chdir(currDrive + "/")
-    refresh(cwdLabel, items, folderIcon, fileIcon, footer, queryNames)
+    refresh(queryNames)
 
 
-def up_key(items, event):
-    global selectedItem
+def up_key(event):
+    global selectedItem, items
     iid = items.focus()
     iid = items.prev(iid)
     if iid:
@@ -820,8 +817,8 @@ def up_key(items, event):
         pass
 
 
-def down_key(items, event):
-    global selectedItem
+def down_key(event):
+    global selectedItem, items
     iid = items.focus()
     iid = items.next(iid)
     if iid:
@@ -849,6 +846,7 @@ def rename_popup(items):
             name = Querybox.get_string(prompt="Name: ", title="Rename")
             old = os.getcwd() + "/" + selectedItem
             os.rename(old, name)
+            refresh([])
         except:
             pass
     else:
@@ -857,8 +855,8 @@ def rename_popup(items):
         )
 
 
-def selectItem(items, event):
-    global selectedItem
+def selectItem(event):
+    global selectedItem, items
     # selectedItemID = items.focus()
     iid = items.identify_row(event.y)
     if iid:
@@ -881,7 +879,7 @@ def keybinds():
 
 def about_popup():  # popup window
     Messagebox.ok(
-        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.5.0",
+        message="My File Explorer\nMade by: Chris Tsouchlakis\nVersion 0.5.1",
         title="About",
     )
 
@@ -892,6 +890,7 @@ def new_file_popup():
         try:
             f = open(os.getcwd() + "/" + name, "x")
             f.close()
+            refresh([])
         except:
             pass
 
@@ -901,6 +900,7 @@ def new_dir_popup():
     if name != "":
         try:
             os.mkdir(os.getcwd() + "/" + name)
+            refresh([])
         except:
             pass
 
@@ -909,14 +909,14 @@ def wrap_new_dir(event):
     new_dir_popup()
 
 
-def copy(items):
-    global src
+def copy():
+    global src, items
     if items.focus() != "":  # if there is a focused item
         src = os.getcwd() + "/" + selectedItem
 
 
-def wrap_copy(items, event):  # wrapper for ctrl+c keybinds
-    copy(items)
+def wrap_copy(event):  # wrapper for ctrl+c keybinds
+    copy()
 
 
 def wrap_paste(event):  # wrapper for ctrl+v keybinds
@@ -962,10 +962,12 @@ def paste_popup(t1):
     gauge.pack(fill=tk.BOTH, expand=tk.YES)
     gauge.start()
     t1.join()
+    refresh([])
     top.destroy()
 
 
-def del_file_popup(items):
+def del_file_popup():
+    global items
     if items.focus() != "":  # if there is a focused item
         answer = Messagebox.yesno(
             message="Are you sure?\nThis file/directory will be deleted permanently.",
@@ -973,6 +975,7 @@ def del_file_popup(items):
         )
         if answer == "Yes":
             del_file()
+            refresh([])
         else:
             return
     else:
@@ -981,8 +984,8 @@ def del_file_popup(items):
         )
 
 
-def wrap_del(items, event):  # wrapper for delete keybind
-    del_file_popup(items)
+def wrap_del(event):  # wrapper for delete keybind
+    del_file_popup()
 
 
 def del_file():
@@ -1017,8 +1020,8 @@ def main():
     read_font()
     root = createWindow()
 
-    cwdLabel, items, folderIcon, fileIcon, footer = create_widgets(root)
-    refresh(cwdLabel, items, folderIcon, fileIcon, footer, [])
+    create_widgets(root)
+    refresh([])
     root.mainloop()
 
 
