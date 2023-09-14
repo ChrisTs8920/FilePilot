@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 0.5.1
+
+- UI now updates (refreshes) automatically on action (new file, new directory, rename, etc.)
+- code improvements and refactoring
+
 ## Version 0.5.0
 
 - Added System menu (old Stats menu)
