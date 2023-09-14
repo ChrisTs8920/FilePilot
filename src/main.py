@@ -363,13 +363,13 @@ def create_widgets(window):
         label="Delete selected",
         image=delete_photo,
         compound="left",
-        command=partial(del_file_popup, items),
+        command=del_file_popup,
     )
     m.add_command(
         label="Rename selected",
         image=rename_photo,
         compound="left",
-        command=partial(rename_popup, items),
+        command=rename_popup,
     )
     m.add_separator()
     m.add_command(
@@ -840,7 +840,8 @@ def FocusOut(searchEntry, window, event):
     window.focus()
 
 
-def rename_popup(items):
+def rename_popup():
+    global items
     if items.focus() != "":
         try:
             name = Querybox.get_string(prompt="Name: ", title="Rename")
