@@ -37,7 +37,6 @@ Icons provided by:
 ## To do
 
 - Will attempt Linux compatability
-- Auto refresh on action (new file, new directory, rename, etc.)
 - Add move file function
 - Add editable path
 - Break into modules
