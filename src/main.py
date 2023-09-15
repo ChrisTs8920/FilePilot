@@ -134,7 +134,7 @@ def refresh(queryNames):
                 )
         except:
             pass
-        # --Refresh Browse
+    # --Refresh Browse
 
     # Draw browse
     items.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -209,8 +209,6 @@ def search(searchEntry, event):
     for name in fileNames:
         if name.lower().find(query) != -1:  # if query in name
             queryNames.append(name)
-        else:
-            queryNames.append("")
     refresh(queryNames)
 
 
