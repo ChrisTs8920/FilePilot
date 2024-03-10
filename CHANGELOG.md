@@ -1,5 +1,12 @@
 # Change Log
 
+## Version 0.5.2
+
+- Many code improvements
+- Changed application name to FilePilot
+- Changed default theme to Yeti Light
+- Changed button colors
+
 ## Version 0.5.1
 
 - UI now updates (refreshes) automatically on action (new file, new directory, rename, etc.)
