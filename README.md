@@ -30,7 +30,7 @@ Icons provided by:
 
 1. ```pip install ttkbootstrap```
 2. ```pip install psutil```
-3. Execute ```py main.py```
+3. Execute ```main.py```
 
 *Tested on Windows 11.*
 
