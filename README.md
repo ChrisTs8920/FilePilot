@@ -1,4 +1,4 @@
-# My File Explorer - Python and Tkinter
+# FilePilot - A file manager for Windows and Linux (WiP)
 
 ## Description
 
@@ -39,15 +39,26 @@ Icons provided by:
 - Will attempt Linux compatability
 - Add move file function
 - Add editable path
-- Break into modules
 - Code improvements and refactoring
 
 ## Screenshots
 
-### Litera Light
+### Yeti Light
 
-![Litera](https://github.com/ChrisTs8920/py-file-explorer/blob/main/screenshots/Screenshot_1.jpg?raw=True)
+![Yeti](https://github.com/ChrisTs8920/py-file-explorer/blob/main/screenshots/Screenshot_1.jpg?raw=True)
 
 ### Darkly
 
 ![Darkly](https://github.com/ChrisTs8920/py-file-explorer/blob/main/screenshots/Screenshot_2.jpg?raw=True)
+
+### Superhero
+
+![Superhero](https://github.com/ChrisTs8920/py-file-explorer/blob/main/screenshots/Screenshot_3.jpg?raw=True)
+
+### Cyborg
+
+![Cyborg](https://github.com/ChrisTs8920/py-file-explorer/blob/main/screenshots/Screenshot_4.jpg?raw=True)
+
+### Vapor
+
+![Vapor](https://github.com/ChrisTs8920/py-file-explorer/blob/main/screenshots/Screenshot_5.jpg?raw=True)
