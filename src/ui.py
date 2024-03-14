@@ -27,7 +27,7 @@ def createWindow():
 def refresh(queryNames):
     #global fileNames, folderIcon, fileIcon, items, cwdLabel, footer
     # Refresh Header
-    globals.cwdLabel.config(text=" " + os.getcwd())
+    globals.cwdLabel.config(text=" " + os.getcwd().replace('\\', "  >  "), font=("TkDefaultFont", globals.font_size, "bold"))
     # --Refresh Header
 
     # Refresh Browse
