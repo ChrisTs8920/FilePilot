@@ -6,6 +6,7 @@
 - Changed application name to FilePilot
 - Changed default theme to Yeti Light
 - Changed button colors
+- Changed current path appearance
 
 ## Version 0.5.1
 
