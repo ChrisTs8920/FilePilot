@@ -2,7 +2,7 @@
 
 ## Description
 
-A simple file explorer made in Python and Tkinter.  
+A simple file manager made in Python and Tkinter.  
 **This project is a work in progress.**
 
 ### Features
