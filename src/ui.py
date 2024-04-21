@@ -148,7 +148,7 @@ def create_widgets(window):
     forwardButton = ttk.Button(
         headerFrame,
         image=frontArrowIcon,
-        command=next,
+        command=func.next,
         bootstyle="default",
     )
     refreshButton = ttk.Button(
