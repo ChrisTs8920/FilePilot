@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 0.5.3
+
+- New icons based on dark or light theme
+- Reworked icon handling in code
+
 ## Version 0.5.2
 
 - Many code improvements
