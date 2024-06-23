@@ -25,8 +25,14 @@ def read_theme():
     # global theme, file_path
     with open(globals.file_path + "../res/theme.txt") as f:  # closes file automatically
         globals.theme = f.readline()
+        if (globals.theme == globals.literaL or globals.theme == globals.mintyL 
+            or globals.theme == globals.morphL or globals.theme == globals.yetiL):
+            globals.theme_mode = "light"
+        else:
+            globals.theme_mode = "dark"
     if globals.theme == "":  # if theme.txt is empty, set default theme
         globals.theme = globals.literaL
+        globals.theme_mode = "light"
 
 
 def read_font():

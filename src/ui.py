@@ -20,7 +20,7 @@ def createWindow():
     root.title("FilePilot")
     root.geometry("1280x720")
     root.resizable(True, True)
-    root.iconphoto(False, tk.PhotoImage(file=globals.file_path + "icon.png"))
+    root.iconphoto(False, tk.PhotoImage(file=globals.file_path + "light/app.png"))
     return root
 
 
@@ -64,7 +64,7 @@ def refresh(queryNames):
                     parent="",
                     index=i,
                     values=(globals.fileNames[i], fileDateModified[i], fileTypes[i], ""),
-                    image=globals.folderIcon,
+                    image=globals.folderIcon[0],
                 )
             else:
                 globals.items.insert(
@@ -76,7 +76,7 @@ def refresh(queryNames):
                         fileTypes[i],
                         fileSizes[i],
                     ),
-                    image=globals.fileIcon,
+                    image=globals.fileIcon[0],
                 )
         except Exception as e:
             print(e)
@@ -100,8 +100,14 @@ def refresh(queryNames):
 
 
 def create_widgets(window):
-    #global folderIcon, fileIcon, items, cwdLabel, footer, file_path
     s = ttk.Style()
+
+    # Color selection for theme
+    if (globals.theme_mode is "dark"):
+        bootstyle = "dark"
+    else:
+        bootstyle = "light"
+
     # Browse Frame
     browseFrame = ttk.Frame(window)
     scroll = ttk.Scrollbar(browseFrame, orient="vertical")
@@ -118,16 +124,59 @@ def create_widgets(window):
     # Footer Frame
     footerFrame = ttk.Frame(window)
     globals.footer = ttk.Label(footerFrame)
-    grip = ttk.Sizegrip(footerFrame, bootstyle="default")
+    grip = ttk.Sizegrip(footerFrame, bootstyle=bootstyle)
     # --Footer Frame
 
-    globals.folderIcon = tk.PhotoImage(file=globals.file_path + "Folder-icon.png", width=20, height=16)
-    globals.fileIcon = tk.PhotoImage(file=globals.file_path + "File-icon.png", width=20, height=16)
+    # Setup icons
+    if (globals.theme_mode == "light"):
+        globals.folderIcon = [tk.PhotoImage(file=globals.file_path + "light/Folder-icon.png"), "light/Folder-icon.png"]
+        globals.fileIcon = [tk.PhotoImage(file=globals.file_path + "light/File-icon.png"), "light/File-icon.png"]
+        globals.backIcon = [tk.PhotoImage(file=globals.file_path + "light/back.png"), "light/back.png"]
+        globals.frontIcon = [tk.PhotoImage(file=globals.file_path + "light/front.png"), "light/front.png"]
+        globals.copyIcon = [tk.PhotoImage(file=globals.file_path + "light/copy.png"), "light/copy.png"]
+        globals.cpuIcon = [tk.PhotoImage(file=globals.file_path + "light/cpu.png"), "light/cpu.png"]
+        globals.deleteIcon = [tk.PhotoImage(file=globals.file_path + "light/delete.png"), "light/delete.png"]
+        globals.driveIcon = [tk.PhotoImage(file=globals.file_path + "light/drive.png"), "light/drive.png"]
+        globals.fontIcon = [tk.PhotoImage(file=globals.file_path + "light/font.png"), "light/font.png"]
+        globals.appIcon = [tk.PhotoImage(file=globals.file_path + "light/app.png"), "light/app.png"]
+        globals.infoIcon = [tk.PhotoImage(file=globals.file_path + "light/info.png"), "light/info.png"]
+        globals.memoryIcon = [tk.PhotoImage(file=globals.file_path + "light/memory.png"), "light/memory.png"]
+        globals.networkIcon = [tk.PhotoImage(file=globals.file_path + "light/network.png"), "light/network.png"]
+        globals.pasteIcon = [tk.PhotoImage(file=globals.file_path + "light/paste.png"), "light/paste.png"]
+        globals.pieIcon = [tk.PhotoImage(file=globals.file_path + "light/pie.png"), "light/pie.png"]
+        globals.processIcon = [tk.PhotoImage(file=globals.file_path + "light/process.png"), "light/process.png"]
+        globals.reloadIcon = [tk.PhotoImage(file=globals.file_path + "light/reload.png"), "light/reload.png"]
+        globals.renameIcon = [tk.PhotoImage(file=globals.file_path + "light/rename.png"), "light/rename.png"]
+        globals.scaleIcon = [tk.PhotoImage(file=globals.file_path + "light/scale.png"), "light/scale.png"]
+        globals.themesIcon = [tk.PhotoImage(file=globals.file_path + "light/themes.png"), "light/themes.png"]
+        globals.exitIcon = [tk.PhotoImage(file=globals.file_path + "light/exit.png"), "light/exit.png"]
+    else:
+        globals.folderIcon = [tk.PhotoImage(file=globals.file_path + "dark/Folder-icon.png"), "dark/Folder-icon.png"]
+        globals.fileIcon = [tk.PhotoImage(file=globals.file_path + "dark/File-icon.png"), "dark/File-icon.png"]
+        globals.backIcon = [tk.PhotoImage(file=globals.file_path + "dark/back.png"), "dark/back.png"]
+        globals.frontIcon = [tk.PhotoImage(file=globals.file_path + "dark/front.png"), "dark/front.png"]
+        globals.copyIcon = [tk.PhotoImage(file=globals.file_path + "dark/copy.png"), "dark/copy.png"]
+        globals.cpuIcon = [tk.PhotoImage(file=globals.file_path + "dark/cpu.png"), "dark/cpu.png"]
+        globals.deleteIcon = [tk.PhotoImage(file=globals.file_path + "dark/delete.png"), "dark/delete.png"]
+        globals.driveIcon = [tk.PhotoImage(file=globals.file_path + "dark/drive.png"), "dark/drive.png"]
+        globals.fontIcon = [tk.PhotoImage(file=globals.file_path + "dark/font.png"), "dark/font.png"]
+        globals.appIcon = [tk.PhotoImage(file=globals.file_path + "dark/app.png"), "dark/app.png"]
+        globals.infoIcon = [tk.PhotoImage(file=globals.file_path + "dark/info.png"), "dark/info.png"]
+        globals.memoryIcon = [tk.PhotoImage(file=globals.file_path + "dark/memory.png"), "dark/memory.png"]
+        globals.networkIcon = [tk.PhotoImage(file=globals.file_path + "dark/network.png"), "dark/network.png"]
+        globals.pasteIcon = [tk.PhotoImage(file=globals.file_path + "dark/paste.png"), "dark/paste.png"]
+        globals.pieIcon = [tk.PhotoImage(file=globals.file_path + "dark/pie.png"), "dark/pie.png"]
+        globals.processIcon = [tk.PhotoImage(file=globals.file_path + "dark/process.png"), "dark/process.png"]
+        globals.reloadIcon = [tk.PhotoImage(file=globals.file_path + "dark/reload.png"), "dark/reload.png"]
+        globals.renameIcon = [tk.PhotoImage(file=globals.file_path + "dark/rename.png"), "dark/rename.png"]
+        globals.scaleIcon = [tk.PhotoImage(file=globals.file_path + "dark/scale.png"), "dark/scale.png"]
+        globals.themesIcon = [tk.PhotoImage(file=globals.file_path + "dark/themes.png"), "dark/themes.png"]
+        globals.exitIcon = [tk.PhotoImage(file=globals.file_path + "dark/exit.png"), "dark/exit.png"]
 
     # Header Frame
-    refreshIcon = tk.PhotoImage(file=globals.file_path + "Very-Basic-Reload-icon.png")
-    backArrowIcon = tk.PhotoImage(file=globals.file_path + "Arrows-Back-icon.png")
-    frontArrowIcon = tk.PhotoImage(file=globals.file_path + "Arrows-Front-icon.png")
+    refreshIcon = tk.PhotoImage(file=globals.file_path + globals.reloadIcon[1])
+    backArrowIcon = tk.PhotoImage(file=globals.file_path + globals.backIcon[1])
+    frontArrowIcon = tk.PhotoImage(file=globals.file_path + globals.frontIcon[1])
     headerFrame = ttk.Frame()
     globals.cwdLabel = ttk.Label(
         headerFrame,
@@ -143,19 +192,19 @@ def create_widgets(window):
         headerFrame,
         image=backArrowIcon,
         command=func.previous,
-        bootstyle="default",
+        bootstyle=bootstyle,
     )
     forwardButton = ttk.Button(
         headerFrame,
         image=frontArrowIcon,
         command=func.next,
-        bootstyle="default",
+        bootstyle=bootstyle,
     )
     refreshButton = ttk.Button(
         headerFrame,
         command=partial(refresh, []),
         image=refreshIcon,
-        bootstyle="default",
+        bootstyle=bootstyle,
     )
 
     # tooltips for buttons
@@ -165,58 +214,58 @@ def create_widgets(window):
     # --Header Frame
 
     # imgs
-    open_img = Image.open(globals.file_path + "icon.png")
+    open_img = Image.open(globals.file_path + globals.appIcon[1])
     open_photo = ImageTk.PhotoImage(open_img)
 
-    refresh_img = Image.open(globals.file_path + "Very-Basic-Reload-icon.png")
+    refresh_img = Image.open(globals.file_path + globals.reloadIcon[1])
     refresh_photo = ImageTk.PhotoImage(refresh_img)
 
-    rename_img = Image.open(globals.file_path + "rename.png")
+    rename_img = Image.open(globals.file_path + globals.renameIcon[1])
     rename_photo = ImageTk.PhotoImage(rename_img)
 
-    drive_img = Image.open(globals.file_path + "drive.png")
+    drive_img = Image.open(globals.file_path + globals.driveIcon[1])
     drive_photo = ImageTk.PhotoImage(drive_img)
 
-    info_img = Image.open(globals.file_path + "info.png")
+    info_img = Image.open(globals.file_path + globals.infoIcon[1])
     info_photo = ImageTk.PhotoImage(info_img)
 
-    pie_img = Image.open(globals.file_path + "pie.png")
+    pie_img = Image.open(globals.file_path + globals.pieIcon[1])
     pie_photo = ImageTk.PhotoImage(pie_img)
 
-    cpu_img = Image.open(globals.file_path + "cpu.png")
+    cpu_img = Image.open(globals.file_path + globals.cpuIcon[1])
     cpu_photo = ImageTk.PhotoImage(cpu_img)
 
-    memory_img = Image.open(globals.file_path + "memory.png")
+    memory_img = Image.open(globals.file_path + globals.memoryIcon[1])
     memory_photo = ImageTk.PhotoImage(memory_img)
 
-    network_img = Image.open(globals.file_path + "network.png")
+    network_img = Image.open(globals.file_path + globals.networkIcon[1])
     network_photo = ImageTk.PhotoImage(network_img)
 
-    process_img = Image.open(globals.file_path + "process.png")
+    process_img = Image.open(globals.file_path + globals.processIcon[1])
     process_photo = ImageTk.PhotoImage(process_img)
 
-    file_img = Image.open(globals.file_path + "File-icon.png")
+    file_img = Image.open(globals.file_path + globals.fileIcon[1])
     file_photo = ImageTk.PhotoImage(file_img)
 
-    dir_img = Image.open(globals.file_path + "Folder-icon.png")
+    dir_img = Image.open(globals.file_path + globals.folderIcon[1])
     dir_photo = ImageTk.PhotoImage(dir_img)
 
-    themes_img = Image.open(globals.file_path + "themes.png")
+    themes_img = Image.open(globals.file_path + globals.themesIcon[1])
     themes_photo = ImageTk.PhotoImage(themes_img)
 
-    scale_img = Image.open(globals.file_path + "scale.png")
+    scale_img = Image.open(globals.file_path + globals.scaleIcon[1])
     scale_photo = ImageTk.PhotoImage(scale_img)
 
-    font_img = Image.open(globals.file_path + "font.png")
+    font_img = Image.open(globals.file_path + globals.fontIcon[1])
     font_photo = ImageTk.PhotoImage(font_img)
 
-    copy_img = Image.open(globals.file_path + "copy.png")
+    copy_img = Image.open(globals.file_path + globals.copyIcon[1])
     copy_photo = ImageTk.PhotoImage(copy_img)
 
-    paste_img = Image.open(globals.file_path + "paste.png")
+    paste_img = Image.open(globals.file_path + globals.pasteIcon[1])
     paste_photo = ImageTk.PhotoImage(paste_img)
 
-    delete_img = Image.open(globals.file_path + "delete.png")
+    delete_img = Image.open(globals.file_path + globals.deleteIcon[1])
     delete_photo = ImageTk.PhotoImage(delete_img)
 
     # Right click menu
@@ -354,7 +403,11 @@ def create_widgets(window):
         command=rename_popup,
     )
     file_menu.add_separator()
-    file_menu.add_command(label="Exit", command=window.destroy)
+    file_menu.add_command(
+        label="Exit", 
+        image=globals.exitIcon[0],
+        compound="left",
+        command=window.destroy)
 
     drives_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", globals.font_size))
     for drive in globals.available_drives:
@@ -542,7 +595,7 @@ def keybinds():
 
 def about_popup():  # popup window
     Messagebox.ok(
-        message="FilePilot\nMade by: Chris Tsouchlakis\nVersion 0.5.2\nMIT License",
+        message="FilePilot\nMade by: Chris Tsouchlakis\nVersion 0.5.3\nMIT License",
         title="About",
     )
 
@@ -630,7 +683,7 @@ def del_file_popup():
 def drive_stats(window):
     top = ttk.Toplevel(window)
     top.resizable(False, False)
-    top.iconphoto(False, tk.PhotoImage(file=globals.file_path + "info.png"))
+    top.iconphoto(False, tk.PhotoImage(file=globals.file_path + globals.infoIcon[1]))
     top.title("Drives")
 
     meters = []
@@ -727,7 +780,7 @@ def processes_win(window):
     top = ttk.Toplevel(window)
     top.geometry("1024x600")
     top.resizable(True, True)
-    top.iconphoto(False, tk.PhotoImage(file=globals.file_path + "process.png"))
+    top.iconphoto(False, tk.PhotoImage(file=globals.file_path + globals.processIcon[1]))
     top.title("Processes")
     scroll = ttk.Scrollbar(top, orient="vertical")
 
