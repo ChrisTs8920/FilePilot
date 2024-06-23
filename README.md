@@ -10,15 +10,14 @@ A simple file manager made in Python and Tkinter.
 - View, Open files and directories
 - Copy and Paste files and directories
 - Create, Delete and Rename files and directories
-- Sorting by name, date modified, type and size (by clicking on the appropriate column)
 - Search for files and directories in current directory
-- Check System metrics (Drives, CPU, Memory, Network, Processes) using the System menu
+- Sort columns by name, date modified, type and size (by clicking on the appropriate column)
+- Check System metrics (Drives, CPU, Memory, Network, Processes) using [psutil](https://pypi.org/project/psutil/)
 - Keybinds (see Help menu)
 - Themes using [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
 Icons provided by:  
 [icons8.com](https://icons8.com/)  
-[veryicon.com](https://www.veryicon.com/)
 
 ## Requirements
 
