@@ -12,11 +12,10 @@ import ui
 def main():
     # global file_path
     globals.file_path = os.path.join(os.path.dirname(__file__), "../icons/")
-    func.checkPlatform()
-    func.read_theme()
-    func.read_font()
-    root = ui.createWindow()
+    
+    func.AppInitializer()
 
+    root = ui.create_window()
     ui.create_widgets(root)
     ui.refresh([])
     root.mainloop()
