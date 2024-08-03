@@ -3,7 +3,8 @@
 ## Description
 
 A simple file manager made in Python and Tkinter.  
-**This project is a work in progress.**
+
+>**This project is a work in progress.**
 
 ### Features
 
@@ -16,7 +17,7 @@ A simple file manager made in Python and Tkinter.
 - Keybinds (see Help menu)
 - Themes using [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
 
-Icons provided by:  
+>Icons provided by:  
 [icons8.com](https://icons8.com/)  
 
 ## Requirements
@@ -31,7 +32,7 @@ Icons provided by:
 2. ```pip install psutil```
 3. Execute ```main.py```
 
-*Tested on Windows 11.*
+>*Tested on Windows 11.*
 
 ## To do
 
