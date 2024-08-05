@@ -3,9 +3,9 @@ import tkinter as tk
 from datetime import datetime
 import globals
 import psutil
-import func
 import ext
 import os
+import func
 
 from functools import partial
 from PIL import Image, ImageTk
@@ -14,7 +14,7 @@ from ttkbootstrap.dialogs.dialogs import Querybox
 from ttkbootstrap.tooltip import ToolTip
 
 
-def createWindow():
+def create_window():
     # root = tk.Tk()
     root = ttk.Window(themename=globals.theme)
     root.title("FilePilot")
@@ -186,18 +186,18 @@ def create_widgets(window):
     )
     searchEntry = ttk.Entry(headerFrame, width=30, font=("TkDefaultFont", globals.font_size))
     searchEntry.insert(0, "Search files..")
-    searchEntry.bind("<Button-1>", partial(func.click, searchEntry))
-    searchEntry.bind("<FocusOut>", partial(func.FocusOut, searchEntry, window))
+    searchEntry.bind("<Button-1>", partial(func.OnClick.click, searchEntry))
+    searchEntry.bind("<FocusOut>", partial(func.UIManager.focus_out, searchEntry, window))
     backButton = ttk.Button(
         headerFrame,
         image=backArrowIcon,
-        command=func.previous,
+        command=func.FileOperation.previous,
         bootstyle=bootstyle,
     )
     forwardButton = ttk.Button(
         headerFrame,
         image=frontArrowIcon,
-        command=func.next,
+        command=func.FileOperation.next,
         bootstyle=bootstyle,
     )
     refreshButton = ttk.Button(
@@ -274,7 +274,7 @@ def create_widgets(window):
         label="Open",
         image=open_photo,
         compound="left",
-        command=func.onDoubleClick,
+        command=func.OnClick.on_double_click,
     )
     m.add_separator()
     m.add_command(
@@ -288,10 +288,10 @@ def create_widgets(window):
         label="Copy Selected",
         image=copy_photo,
         compound="left",
-        command=func.copy,
+        command=func.FileOperation.copy,
     )
     m.add_command(
-        label="Paste Selected", image=paste_photo, compound="left", command=func.paste
+        label="Paste Selected", image=paste_photo, compound="left", command=func.FileOperation.paste
     )
     m.add_command(
         label="Delete selected",
@@ -330,34 +330,34 @@ def create_widgets(window):
         "Name",
         text="Name",
         anchor=tk.CENTER,
-        command=partial(func.sort_col, "Name", False),
+        command=partial(func.Sorter.sort_col, "Name", False),
     )
     globals.items.heading(
         "Date modified",
         text="Date modified",
         anchor=tk.CENTER,
-        command=partial(func.sort_col, "Date modified", False),
+        command=partial(func.Sorter.sort_col, "Date modified", False),
     )
     globals.items.heading(
         "Type",
         text="Type",
         anchor=tk.CENTER,
-        command=partial(func.sort_col, "Type", False),
+        command=partial(func.Sorter.sort_col, "Type", False),
     )
     globals.items.heading(
         "Size",
         text="Size",
         anchor=tk.CENTER,
-        command=partial(func.sort_col, "Size", False),
+        command=partial(func.Sorter.sort_col, "Size", False),
     )
     globals.items.bind(
         "<Double-1>",
-        func.onDoubleClick,
+        func.OnClick.on_double_click,
     )  # command on double click
-    globals.items.bind("<ButtonRelease-1>", func.selectItem)
-    globals.items.bind("<Button-3>", partial(func.onRightClick, m))  # command on right click
-    globals.items.bind("<Up>", func.up_key)  # bind up arrow key
-    globals.items.bind("<Down>", func.down_key)  # bind down arrow key
+    globals.items.bind("<ButtonRelease-1>", func.EventHandler.select_item)
+    globals.items.bind("<Button-3>", partial(func.OnClick.on_right_click, m))  # command on right click
+    globals.items.bind("<Up>", func.EventHandler.up_key)  # bind up arrow key
+    globals.items.bind("<Down>", func.EventHandler.down_key)  # bind down arrow key
     # --Browse Frame
 
     # Menu bar
@@ -369,7 +369,7 @@ def create_widgets(window):
         label="Open",
         image=open_photo,
         compound="left",
-        command=func.onDoubleClick,
+        command=func.OnClick.on_double_click,
     )
     file_menu.add_command(
         label="New file",
@@ -385,10 +385,10 @@ def create_widgets(window):
         label="Copy Selected",
         image=copy_photo,
         compound="left",
-        command=func.copy,
+        command=func.FileOperation.copy,
     )
     file_menu.add_command(
-        label="Paste Selected", image=paste_photo, compound="left", command=func.paste
+        label="Paste Selected", image=paste_photo, compound="left", command=func.FileOperation.paste
     )
     file_menu.add_command(
         label="Delete selected",
@@ -415,7 +415,7 @@ def create_widgets(window):
             label=drive,
             image=drive_photo,
             compound="left",
-            command=partial(func.cd_drive, drive, []),
+            command=partial(func.FileOperation.cd_drive, drive, []),
         )
 
     system_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", globals.font_size))
@@ -442,18 +442,18 @@ def create_widgets(window):
     )
 
     sub_themes = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", globals.font_size))
-    sub_themes.add_command(label="Darkly", command=partial(func.write_theme, globals.Darkly))
-    sub_themes.add_command(label="Solar Dark", command=partial(func.write_theme, globals.solarD))
+    sub_themes.add_command(label="Darkly", command=partial(func.SettingManager.write_theme, globals.Darkly))
+    sub_themes.add_command(label="Solar Dark", command=partial(func.SettingManager.write_theme, globals.solarD))
     sub_themes.add_command(
-        label="Superhero Dark", command=partial(func.write_theme, globals.superheroD)
+        label="Superhero Dark", command=partial(func.SettingManager.write_theme, globals.superheroD)
     )
-    sub_themes.add_command(label="Cyborg Dark", command=partial(func.write_theme, globals.CyborgD))
-    sub_themes.add_command(label="Vapor Dark", command=partial(func.write_theme, globals.VaporD))
+    sub_themes.add_command(label="Cyborg Dark", command=partial(func.SettingManager.write_theme, globals.CyborgD))
+    sub_themes.add_command(label="Vapor Dark", command=partial(func.SettingManager.write_theme, globals.VaporD))
     sub_themes.add_separator()
-    sub_themes.add_command(label="Litera Light", command=partial(func.write_theme, globals.literaL))
-    sub_themes.add_command(label="Minty Light", command=partial(func.write_theme, globals.mintyL))
-    sub_themes.add_command(label="Morph Light", command=partial(func.write_theme, globals.morphL))
-    sub_themes.add_command(label="Yeti Light", command=partial(func.write_theme, globals.yetiL))
+    sub_themes.add_command(label="Litera Light", command=partial(func.SettingManager.write_theme, globals.literaL))
+    sub_themes.add_command(label="Minty Light", command=partial(func.SettingManager.write_theme, globals.mintyL))
+    sub_themes.add_command(label="Morph Light", command=partial(func.SettingManager.write_theme, globals.morphL))
+    sub_themes.add_command(label="Yeti Light", command=partial(func.SettingManager.write_theme, globals.yetiL))
 
     sub_font_size = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", globals.font_size))
     sub_font_size.add_command(label="14", command=partial(change_font_popup, 14))
@@ -467,11 +467,11 @@ def create_widgets(window):
     sub_font_size.add_command(label="7", command=partial(change_font_popup, 7))
 
     sub_scale = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", globals.font_size))
-    sub_scale.add_command(label="150%", command=partial(func.change_scale, 1.5, s))
-    sub_scale.add_command(label="125%", command=partial(func.change_scale, 1.25, s))
-    sub_scale.add_command(label="100%", command=partial(func.change_scale, 1.0, s))
-    sub_scale.add_command(label="75%", command=partial(func.change_scale, 0.75, s))
-    sub_scale.add_command(label="50%", command=partial(func.change_scale, 0.5, s))
+    sub_scale.add_command(label="150%", command=partial(func.SettingManager.change_scale, 1.5, s))
+    sub_scale.add_command(label="125%", command=partial(func.SettingManager.change_scale, 1.25, s))
+    sub_scale.add_command(label="100%", command=partial(func.SettingManager.change_scale, 1.0, s))
+    sub_scale.add_command(label="75%", command=partial(func.SettingManager.change_scale, 0.75, s))
+    sub_scale.add_command(label="50%", command=partial(func.SettingManager.change_scale, 0.5, s))
 
     preferences_menu = ttk.Menu(bar, tearoff=False, font=("TkDefaultFont", globals.font_size))
     preferences_menu.add_cascade(
@@ -517,7 +517,7 @@ def create_widgets(window):
 
     searchEntry.bind(
         "<Return>",
-        partial(func.search, searchEntry),
+        partial(func.FileOperation.search, searchEntry),
     )  # on enter press, run search1
 
     # img references
@@ -561,11 +561,11 @@ def wrap_new_dir(event):
 
 
 def wrap_copy(event):  # wrapper for ctrl+c keybinds
-    func.copy()
+    func.FileOperation.copy()
 
 
 def wrap_paste(event):  # wrapper for ctrl+v keybinds
-    func.paste()
+    func.FileOperation.paste()
 
 
 def wrap_del(event):  # wrapper for delete keybind
@@ -581,7 +581,7 @@ def warning_popup():
 
 def change_font_popup(size):
     warning_popup()
-    func.change_font_size(size)
+    func.SettingManager.change_font_size(size)
 
 
 def keybinds():
@@ -669,7 +669,7 @@ def del_file_popup():
             alert=True,
         )
         if answer == "Yes":
-            func.del_file()
+            func.FileOperation.del_file()
             refresh([])
         else:
             return
