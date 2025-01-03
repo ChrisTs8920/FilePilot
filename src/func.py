@@ -2,6 +2,7 @@ import os
 import shutil
 import globals
 import threading
+import subprocess
 from datetime import datetime
 
 from functools import partial
@@ -9,8 +10,7 @@ from sys import platform
 import ui
 
 
-def checkPlatform():
-    # global currDrive, available_drives
+def check_platform():
     if platform == "win32":
         globals.available_drives = [
             chr(x) + ":" for x in range(65, 91) if os.path.exists(chr(x) + ":")
@@ -22,7 +22,6 @@ def checkPlatform():
 
 
 def read_theme():
-    # global theme, file_path
     with open(globals.file_path + "../res/theme.txt") as f:  # closes file automatically
         globals.theme = f.readline()
         if (globals.theme == globals.literaL or globals.theme == globals.mintyL 
@@ -36,7 +35,6 @@ def read_theme():
 
 
 def read_font():
-    #global font_size
     with open(globals.file_path + "../res/font.txt") as f:  # closes file automatically
         globals.font_size = f.readline()
     if globals.font_size == "":  # if font.txt is empty, set default font
@@ -48,14 +46,13 @@ def click(searchEntry, event):
         searchEntry.delete(0, "end")
 
 
-def FocusOut(searchEntry, window, event):
+def focus_out(searchEntry, window, event):
     searchEntry.delete(0, "end")
     searchEntry.insert(0, "Search files..")
     window.focus()
 
 
 def previous():
-    #global lastDirectory
     globals.lastDirectory = os.getcwd()
     os.chdir("../")
     ui.refresh([])
@@ -70,8 +67,7 @@ def next():
         return
 
 
-def onDoubleClick(event=None):
-    #global items
+def on_double_click(event=None):
     iid = globals.items.focus()
     # iid = items.identify_row(event.y) # old
     if iid == "":  # if double click on blank, don't do anything
@@ -86,7 +82,10 @@ def onDoubleClick(event=None):
         ):  # if file is directory, open directory else open file
             os.chdir(newPath)
         else:
-            os.startfile(newPath)
+            if platform == "win32":
+                os.startfile(newPath)
+            elif platform == "linux":
+                subprocess.Popen(["xdg-open", newPath])
         ui.refresh([])
     except Exception as e:
         print(e)
@@ -94,9 +93,12 @@ def onDoubleClick(event=None):
         os.chdir("../")
 
 
-def onRightClick(m, event):
-    selectItem(event)
-    m.tk_popup(event.x_root, event.y_root)
+def on_right_click(m, event):
+    select_item(event)
+    try:
+        m.tk_popup(event.x_root + 1, event.y_root + 1)
+    finally:
+        m.grab_release()
 
 
 def search(searchEntry, event):
@@ -120,26 +122,25 @@ def del_file():
 
 
 def copy():
-    #global src, items
     if globals.items.focus() != "":  # if there is a focused item
         globals.src = os.getcwd() + "/" + globals.selectedItem
 
 
 def paste():
-    #global src
     dest = os.getcwd() + "/"
-    if not os.path.isdir(globals.src) and globals.src != "":
+    if not os.path.isdir(globals.src) and globals.src != "": # if is file
         try:
             t1 = threading.Thread(
                 target=shutil.copy2, args=(globals.src, dest)
             )  # use threads so gui does not hang on large file copy
-            t2 = threading.Thread(target=ui.paste_popup, args=([t1]))
+            # t2 = threading.Thread(target=ui.paste_popup, args=([t1]))
             t1.start()
-            t2.start()
+            ui.paste_popup(t1)
+            # t2.start()
         except Exception as e:
             print(e)
             pass
-    elif os.path.isdir(globals.src) and globals.src != "":
+    elif os.path.isdir(globals.src) and globals.src != "": # if is directory
         try:
             new_dest_dir = os.path.join(dest, os.path.basename(globals.src))
             os.makedirs(new_dest_dir)
@@ -147,16 +148,16 @@ def paste():
                 target=shutil.copytree,
                 args=(globals.src, new_dest_dir, False, None, shutil.copy2, False, True),
             )
-            t2 = threading.Thread(target=ui.paste_popup, args=([t1]))
+            # t2 = threading.Thread(target=ui.paste_popup, args=([t1]))
             t1.start()
-            t2.start()
+            ui.paste_popup(t1)
+            # t2.start()
         except Exception as e:
             print(e)
             pass
 
 
 def up_key(event):
-    #global selectedItem, items
     iid = globals.items.focus()
     iid = globals.items.prev(iid)
     if iid:
@@ -168,7 +169,6 @@ def up_key(event):
 
 
 def down_key(event):
-    #global selectedItem, items
     iid = globals.items.focus()
     iid = globals.items.next(iid)
     if iid:
@@ -180,7 +180,6 @@ def down_key(event):
 
 
 def sort_col(col, reverse):
-    #global items
     l = [(globals.items.set(k, col), k) for k in globals.items.get_children("")]
     if col == "Name" or col == "Type":
         l.sort(reverse=reverse)
@@ -209,8 +208,7 @@ def sort_key_size(item):
         return -1  # if it's a directory, give it negative size value, for sorting
 
 
-def selectItem(event):
-    #global selectedItem, items
+def select_item(event):
     # selectedItemID = items.focus()
     iid = globals.items.identify_row(event.y)
     if iid:
@@ -223,7 +221,6 @@ def selectItem(event):
 
 
 def cd_drive(drive, queryNames):
-    #global fileNames, currDrive, cwdLabel
     globals.cwdLabel.config(text=" " + drive)
     globals.currDrive = drive
     globals.fileNames = os.listdir(globals.currDrive)

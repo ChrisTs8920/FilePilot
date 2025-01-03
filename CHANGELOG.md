@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 0.6.0
+
+- Linux fixes, linux compatibility (maybe, tested using WSL2)
+- Minor right click menu name changes
+- Some code refactoring
+
 ## Version 0.5.3
 
 - New icons based on dark or light theme

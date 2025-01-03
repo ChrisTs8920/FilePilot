@@ -14,7 +14,7 @@ from ttkbootstrap.dialogs.dialogs import Querybox
 from ttkbootstrap.tooltip import ToolTip
 
 
-def createWindow():
+def create_window():
     # root = tk.Tk()
     root = ttk.Window(themename=globals.theme)
     root.title("FilePilot")
@@ -25,7 +25,6 @@ def createWindow():
 
 
 def refresh(queryNames):
-    #global fileNames, folderIcon, fileIcon, items, cwdLabel, footer
     # Refresh Header
     globals.cwdLabel.config(text=" " + os.getcwd().replace('\\', "  >  "), font=("TkDefaultFont", globals.font_size, "bold"))
     # --Refresh Header
@@ -103,7 +102,7 @@ def create_widgets(window):
     s = ttk.Style()
 
     # Color selection for theme
-    if (globals.theme_mode is "dark"):
+    if (globals.theme_mode == "dark"):
         bootstyle = "dark"
     else:
         bootstyle = "light"
@@ -187,7 +186,7 @@ def create_widgets(window):
     searchEntry = ttk.Entry(headerFrame, width=30, font=("TkDefaultFont", globals.font_size))
     searchEntry.insert(0, "Search files..")
     searchEntry.bind("<Button-1>", partial(func.click, searchEntry))
-    searchEntry.bind("<FocusOut>", partial(func.FocusOut, searchEntry, window))
+    searchEntry.bind("<FocusOut>", partial(func.focus_out, searchEntry, window))
     backButton = ttk.Button(
         headerFrame,
         image=backArrowIcon,
@@ -274,7 +273,7 @@ def create_widgets(window):
         label="Open",
         image=open_photo,
         compound="left",
-        command=func.onDoubleClick,
+        command=func.on_double_click,
     )
     m.add_separator()
     m.add_command(
@@ -285,22 +284,22 @@ def create_widgets(window):
     )
     m.add_separator()
     m.add_command(
-        label="Copy Selected",
+        label="Copy",
         image=copy_photo,
         compound="left",
         command=func.copy,
     )
     m.add_command(
-        label="Paste Selected", image=paste_photo, compound="left", command=func.paste
+        label="Paste", image=paste_photo, compound="left", command=func.paste
     )
     m.add_command(
-        label="Delete selected",
+        label="Delete",
         image=delete_photo,
         compound="left",
         command=del_file_popup,
     )
     m.add_command(
-        label="Rename selected",
+        label="Rename",
         image=rename_photo,
         compound="left",
         command=rename_popup,
@@ -352,10 +351,10 @@ def create_widgets(window):
     )
     globals.items.bind(
         "<Double-1>",
-        func.onDoubleClick,
+        func.on_double_click,
     )  # command on double click
-    globals.items.bind("<ButtonRelease-1>", func.selectItem)
-    globals.items.bind("<Button-3>", partial(func.onRightClick, m))  # command on right click
+    globals.items.bind("<ButtonRelease-1>", func.select_item)
+    globals.items.bind("<Button-3>", partial(func.on_right_click, m))  # command on right click
     globals.items.bind("<Up>", func.up_key)  # bind up arrow key
     globals.items.bind("<Down>", func.down_key)  # bind down arrow key
     # --Browse Frame
@@ -369,7 +368,7 @@ def create_widgets(window):
         label="Open",
         image=open_photo,
         compound="left",
-        command=func.onDoubleClick,
+        command=func.on_double_click,
     )
     file_menu.add_command(
         label="New file",
@@ -595,7 +594,7 @@ def keybinds():
 
 def about_popup():  # popup window
     Messagebox.ok(
-        message="FilePilot\nMade by: Chris Tsouchlakis\nVersion 0.5.3\nMIT License",
+        message="FilePilot\nMade by: Chris Tsouchlakis\nVersion 0.6.0\nMIT License",
         title="About",
     )
 
@@ -628,7 +627,6 @@ def new_dir_popup():
 
 
 def rename_popup():
-    #global items
     if globals.items.focus() != "":
         try:
             name = Querybox.get_string(prompt="Name: ", title="Rename")
@@ -662,7 +660,6 @@ def paste_popup(t1):
 
 
 def del_file_popup():
-    #global items
     if globals.items.focus() != "":  # if there is a focused item
         answer = Messagebox.yesno(
             message="Are you sure?\nThis file/directory will be deleted permanently.",

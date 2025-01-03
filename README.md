@@ -16,6 +16,7 @@ A simple file manager made in Python and Tkinter.
 - Check System metrics (Drives, CPU, Memory, Network, Processes) using [psutil](https://pypi.org/project/psutil/)
 - Keybinds (see Help menu)
 - Themes using [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap)
+- Compatible with Windows and Linux (maybe, tested using WSL2)
 
 >Icons provided by:  
 [icons8.com](https://icons8.com/)  
@@ -23,8 +24,8 @@ A simple file manager made in Python and Tkinter.
 ## Requirements
 
 - Python 3.8+
-- ttkbootsrap (version tested 1.10.1)
-- psutil (version tested 5.9.5)
+- ttkbootsrap (version used 1.10.1)
+- psutil (version used 5.9.5)
 
 ## How to run
 
@@ -36,7 +37,7 @@ A simple file manager made in Python and Tkinter.
 
 ## To do
 
-- Will attempt Linux compatability
+- Further tests and fixes on Linux
 - Add move file function
 - Add editable path
 - Code improvements and refactoring

@@ -4,18 +4,18 @@ import globals
 import ui
 
 # TODO:
-# Linux compatibility,
+# Further tests and fixes on linux,
 # Add move file function,
 # editable path,
 # code improvements, refactoring
 
 def main():
-    # global file_path
-    globals.file_path = os.path.join(os.path.dirname(__file__), "../icons/")
-    func.checkPlatform()
+    # globals.file_path = os.path.join(os.path.dirname(__file__), "../icons/") # old
+    globals.file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../icons/")) + "/"
+    func.check_platform()
     func.read_theme()
     func.read_font()
-    root = ui.createWindow()
+    root = ui.create_window()
 
     ui.create_widgets(root)
     ui.refresh([])
